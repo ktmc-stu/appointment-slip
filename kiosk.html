@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiosk · Appointment Slip 打印站</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="kiosk">
+
+<header class="kiosk-bar">
+  <div class="kiosk-brand">
+    <span class="tag">KIOSK</span>
+    <div>
+      <h1 id="kSchool">SCHOOL NAME</h1>
+      <p>APPOINTMENT SLIP · 打印站</p>
+    </div>
+  </div>
+  <div class="kiosk-mid">
+    <span id="syncPill" class="pill pill-off"><i class="led"></i>连线中…</span>
+    <a class="linkbtn" href="index.html">← 控制台</a>
+  </div>
+  <div class="kiosk-clock">
+    <span id="clockTime">--:--:--</span>
+    <small id="clockDate"></small>
+  </div>
+</header>
+
+<div class="chips" id="dateChips"></div>
+<main class="kiosk-grid" id="cardGrid"></main>
+<div class="kiosk-empty" id="kioskEmpty" hidden></div>
+
+<footer class="kiosk-actions">
+  <div class="sel-info">
+    <span><b id="selCount">0</b> 已选</span>
+    <button class="linkbtn" id="selectAll" type="button">全选</button>
+    <button class="linkbtn" id="clearSel" type="button">清除选择</button>
+  </div>
+  <div class="kiosk-btns">
+    <button class="btn k-btn k-btn-ghost" id="testPrint" type="button">测试页</button>
+    <button class="btn k-btn k-btn-yellow" id="printSelected" type="button" disabled>列印已选（0）</button>
+    <button class="btn k-btn k-btn-red" id="printAll" type="button">列印全部（0）</button>
+  </div>
+</footer>
+
+<div id="print-root" aria-hidden="true"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/common.js"></script>
+<script src="js/kiosk.js"></script>
+</body>
+</html>

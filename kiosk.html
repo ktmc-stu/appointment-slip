@@ -8,7 +8,113 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<style>
+:root{
+  --paper:#f3efe4; --card:#fffdf6; --ink:#1b2332; --ink2:#4c5568;
+  --red:#d9481c; --yellow:#ffd23f; --green:#1e7d54; --navy:#141a26;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans','Noto Sans SC',system-ui,sans-serif}
+.mono{font-family:'IBM Plex Mono',monospace}
+.pill{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:999px;
+  padding:6px 14px;font-size:12px;font-weight:700;background:#fff;white-space:nowrap;color:var(--ink)}
+.pill .led{width:9px;height:9px;border-radius:50%;background:#9aa2b1;flex:none}
+.pill-on{background:#e9f5ee}
+.pill-on .led{background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,125,84,.5)}70%{box-shadow:0 0 0 7px rgba(30,125,84,0)}100%{box-shadow:0 0 0 0 rgba(30,125,84,0)}}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;border:2px solid var(--ink);
+  border-radius:8px;background:var(--card);color:var(--ink);padding:9px 18px;cursor:pointer;
+  box-shadow:3px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s,background .15s;user-select:none}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+body.kiosk{background:var(--navy);color:var(--paper);
+  background-image:radial-gradient(rgba(255,255,255,.07) 1.2px,transparent 1.2px);
+  background-size:22px 22px;padding-bottom:130px;min-height:100vh}
+.kiosk-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:16px 26px;border-bottom:3px solid var(--yellow);background:rgba(16,20,29,.6)}
+.kiosk-brand{display:flex;align-items:center;gap:16px}
+.tag{display:inline-block;background:var(--yellow);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  font-family:'Archivo Black';letter-spacing:2px;padding:8px 12px;transform:rotate(-3deg);font-size:15px;color:var(--ink)}
+.kiosk-brand h1{font-family:'Archivo Black','Noto Sans SC';font-size:clamp(18px,2.4vw,26px);color:#fff}
+.kiosk-brand p{font-size:11px;letter-spacing:3px;color:#9fb0c8;margin-top:3px}
+.kiosk-mid{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.kiosk-bar .pill{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);color:#dbe4f0}
+.kiosk-bar .pill-on{background:rgba(30,125,84,.3)}
+.kiosk-clock{text-align:right}
+.kiosk-clock #clockTime{font-family:'IBM Plex Mono';font-weight:600;font-size:clamp(26px,3.4vw,40px);color:var(--yellow);letter-spacing:2px;line-height:1}
+.kiosk-clock small{display:block;font-size:12px;color:#9fb0c8;letter-spacing:2px;margin-top:4px}
+.linkbtn{font:inherit;background:none;border:none;color:#8fa0b8;text-decoration:underline;cursor:pointer;font-size:13px}
+.linkbtn:hover{color:var(--yellow)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;padding:16px 26px 4px}
+.chip{font:inherit;font-weight:700;font-size:14px;color:var(--paper);background:transparent;
+  border:2px solid rgba(255,255,255,.35);border-radius:999px;padding:8px 18px;cursor:pointer;transition:.18s}
+.chip:hover{border-color:var(--yellow);transform:translateY(-1px)}
+.chip.on{background:var(--yellow);color:var(--ink);border-color:var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.4)}
+.kiosk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px;padding:18px 26px 30px}
+.kcard{position:relative;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--ink);
+  border-radius:10px;box-shadow:5px 5px 0 rgba(0,0,0,.45);padding:14px 16px 16px;cursor:pointer;
+  display:flex;flex-direction:column;gap:6px;transition:transform .15s,box-shadow .15s,background .2s;min-height:132px}
+.kcard:hover{transform:translateY(-3px);box-shadow:7px 9px 0 rgba(0,0,0,.45)}
+.kcard:active{transform:translateY(0) scale(.99)}
+.k-time{font-size:27px;font-weight:600;letter-spacing:1px}
+.k-who b{font-size:16px}
+.k-who i{font-style:normal;color:var(--ink2);padding:0 2px}
+.k-see{font-size:13px;color:var(--ink2)}
+.k-meta{font-size:11.5px;color:var(--ink2)}
+.k-rmk{font-size:12px;background:rgba(27,35,50,.07);border-radius:5px;padding:4px 7px}
+.k-check{position:absolute;top:-10px;right:-10px;width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;
+  border:2px solid var(--ink);display:none;align-items:center;justify-content:center;font-weight:900;font-size:16px;
+  box-shadow:2px 2px 0 rgba(0,0,0,.4)}
+.kcard.sel{background:var(--yellow);transform:rotate(-.6deg) scale(1.015)}
+.kcard.sel .k-check{display:inline-flex;animation:stampIn .25s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes stampIn{from{transform:scale(2) rotate(30deg);opacity:0}to{transform:scale(1) rotate(8deg);opacity:1}}
+.kiosk-empty{text-align:center;color:#8fa0b8;padding:60px 20px;font-size:16px}
+.kiosk-actions{position:fixed;left:0;right:0;bottom:0;background:#10141d;border-top:3px solid var(--yellow);
+  padding:14px 26px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;z-index:20}
+.sel-info{color:#c8d2e0;font-size:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sel-info b{font-family:'IBM Plex Mono';font-size:22px;color:var(--yellow)}
+.kiosk-btns{display:flex;gap:12px;flex-wrap:wrap}
+.k-btn{font-size:17px;padding:13px 26px;border-radius:10px}
+.k-btn-red{background:var(--red);color:#fff}
+.k-btn-red:hover{background:#c33d13}
+.k-btn-yellow{background:var(--yellow);color:var(--ink)}
+.k-btn-ghost{background:transparent;color:var(--paper);border-color:rgba(255,255,255,.5);box-shadow:none}
+.k-btn-ghost:hover{border-color:var(--yellow);color:var(--yellow);box-shadow:none;transform:none}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);
+  font-family:'IBM Plex Mono','Noto Sans SC';font-size:13px;padding:11px 20px;border-radius:8px;border:2px solid var(--yellow);
+  box-shadow:4px 4px 0 rgba(0,0,0,.25);opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast[hidden]{display:block!important;visibility:hidden}
+
+/* ================= 打印：只输出小票 80×140mm ================= */
+#print-root{display:none}
+@media print{
+  @page{size:80mm 140mm;margin:0}
+  html,body{margin:0!important;padding:0!important;background:#fff!important}
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block}
+  .slip{
+    width:80mm;height:139.5mm;box-sizing:border-box;overflow:hidden;
+    padding:6mm 5.5mm 3.5mm;display:flex;flex-direction:column;
+    background:#fff;color:#000;
+    font-family:'IBM Plex Sans','Noto Sans SC',sans-serif;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    page-break-after:always;break-after:page;
+  }
+  .slip:last-child{page-break-after:auto;break-after:auto}
+  .slip-school{font-size:12pt;font-weight:700;text-align:center;letter-spacing:.3pt;line-height:1.25}
+  .slip-title{font-family:'Archivo Black','IBM Plex Sans';font-size:13.5pt;text-align:center;text-transform:uppercase;
+    letter-spacing:.5pt;border-top:.7mm solid #000;border-bottom:.25mm solid #000;padding:1.8mm 0;margin:2.2mm 0 1mm}
+  .slip-fields{width:100%;border-collapse:collapse;margin-top:2mm}
+  .slip-fields th{width:20mm;text-align:left;vertical-align:top;font-size:9.5pt;font-weight:600;padding:1.4mm 1mm 1.4mm 0;white-space:nowrap}
+  .slip-fields td{font-size:10.5pt;font-weight:700;padding:1.4mm 0;border-bottom:.2mm dotted #888;word-break:break-word;line-height:1.3}
+  .slip-fields .rmk{font-weight:500;font-size:9.5pt;max-height:33mm;overflow:hidden;word-break:break-word}
+  .slip-printed{margin-top:auto;padding-top:1.6mm;border-top:.3mm dashed #000;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:7.5pt;letter-spacing:.2pt}
+}
+</style>
 </head>
 <body class="kiosk">
 
@@ -50,9 +156,212 @@
 <div id="print-root" aria-hidden="true"></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="js/config.js"></script>
-<script src="js/db.js"></script>
-<script src="js/common.js"></script>
-<script src="js/kiosk.js"></script>
+<script>
+/* ========== 设定（与控制台相同，两边都要填） ========== */
+window.APP_CONFIG = {
+  DEFAULT_SCHOOL_NAME: "SCHOOL NAME",
+  firebase: {
+    apiKey:            "",
+    authDomain:        "",
+    databaseURL:       "",
+    projectId:         "",
+    storageBucket:     "",
+    messagingSenderId: "",
+    appId:             ""
+  }
+};
+
+/* ========== 同步层 ========== */
+(function () {
+  const LS_A = 'asl_appointments', LS_S = 'asl_settings';
+  const listeners = new Set();
+  const state = { appointments: {}, settings: {} };
+  let cloud = null;
+  const uid = () => 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const emit = () => listeners.forEach(cb => { try { cb(state); } catch (e) { console.error(e); } });
+  function loadLocal() {
+    try { state.appointments = JSON.parse(localStorage.getItem(LS_A) || '{}'); } catch (e) { state.appointments = {}; }
+    try { state.settings = JSON.parse(localStorage.getItem(LS_S) || '{}'); } catch (e) { state.settings = {}; }
+  }
+  const saveA = () => localStorage.setItem(LS_A, JSON.stringify(state.appointments));
+  const saveS = () => localStorage.setItem(LS_S, JSON.stringify(state.settings));
+  function bootLocal() {
+    DB.mode = 'local'; loadLocal(); emit();
+    window.addEventListener('storage', e => { if (e.key === LS_A || e.key === LS_S) { loadLocal(); emit(); } });
+  }
+  window.DB = {
+    mode: 'boot', state,
+    init() {
+      const cfg = (window.APP_CONFIG && window.APP_CONFIG.firebase) || {};
+      if (cfg.databaseURL) {
+        DB.mode = 'connecting';
+        return Promise.all([
+          import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js'),
+          import('https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js')
+        ]).then(([am, dm]) => {
+          const app = am.initializeApp(cfg);
+          const db = dm.getDatabase(app);
+          cloud = { db, ref: dm.ref, set: dm.set, update: dm.update, remove: dm.remove };
+          DB.mode = 'cloud';
+          dm.onValue(dm.ref(db, '/'), snap => {
+            const v = snap.val() || {};
+            state.appointments = v.appointments || {};
+            state.settings = v.settings || {};
+            emit();
+          }, err => console.error('RTDB', err));
+        }).catch(err => { console.warn('Firebase 连接失败，改用本机模式', err); bootLocal(); });
+      }
+      bootLocal();
+      return Promise.resolve();
+    },
+    onChange(cb) { listeners.add(cb); cb(state); }
+  };
+})();
+
+/* ========== 共用工具 + slip 渲染 + 打印 ========== */
+window.SK = (function () {
+  const pad = n => String(n).padStart(2, '0');
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const todayStr = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const nowStamp = (d = new Date()) => `${todayStr(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const FIELDS = [
+    ['form', 'Form'], ['classNo', 'Class No'], ['shouldSee', 'Should see'],
+    ['date', 'Date'], ['time', 'Time'], ['room', 'Room'], ['remark', 'Remark']
+  ];
+  function schoolName() {
+    return (DB.state.settings && DB.state.settings.schoolName)
+      || (window.APP_CONFIG && APP_CONFIG.DEFAULT_SCHOOL_NAME) || 'SCHOOL NAME';
+  }
+  function slipHTML(a, printedAt) {
+    const rows = FIELDS.map(([k, label]) => {
+      const v = esc(a[k]);
+      const inner = k === 'remark' ? `<div class="rmk">${v || '&nbsp;'}</div>` : (v || '&nbsp;');
+      return `<tr><th>${label}:</th><td>${inner}</td></tr>`;
+    }).join('');
+    return `<div class="slip">
+      <div class="slip-school">${esc(schoolName())}</div>
+      <div class="slip-title">Appointment Slip</div>
+      <table class="slip-fields">${rows}</table>
+      <div class="slip-printed">Printed at ${printedAt}</div>
+    </div>`;
+  }
+  function print(items) {
+    if (!items.length) { toast('没有可列印的项目'); return; }
+    const root = document.getElementById('print-root');
+    const at = nowStamp();
+    root.innerHTML = items.map(a => slipHTML(a, at)).join('');
+    setTimeout(() => window.print(), 150);
+    let done = false;
+    const clean = () => { if (!done) { done = true; root.innerHTML = ''; } };
+    window.addEventListener('afterprint', clean, { once: true });
+    setTimeout(clean, 30000);
+  }
+  let toastTimer;
+  function toast(msg) {
+    const t = document.getElementById('toast'); if (!t) return;
+    t.textContent = msg; t.hidden = false;
+    requestAnimationFrame(() => t.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  return { pad, esc, todayStr, nowStamp, FIELDS, schoolName, slipHTML, print, toast };
+})();
+
+/* ========== Kiosk 逻辑 ========== */
+(function () {
+  const $ = s => document.querySelector(s);
+  const selected = new Set();
+  let active = null;
+
+  function tick() {
+    const d = new Date();
+    $('#clockTime').textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(SK.pad).join(':');
+    $('#clockDate').textContent = `${SK.todayStr(d)} 星期${'日一二三四五六'[d.getDay()]}`;
+  }
+  tick(); setInterval(tick, 1000);
+
+  const items = () => Object.entries(DB.state.appointments || {}).map(([id, a]) => ({ id, ...a }));
+  const byDateTime = (a, b) =>
+    String(a.date || '').localeCompare(String(b.date || '')) ||
+    String(a.time || '').localeCompare(String(b.time || '')) ||
+    (a.createdAt || 0) - (b.createdAt || 0);
+  const visible = list => active === 'all' ? list
+    : active === 'today' ? list.filter(i => i.date === SK.todayStr())
+    : list.filter(i => i.date === active);
+
+  function render() {
+    $('#kSchool').textContent = SK.schoolName();
+    const p = $('#syncPill');
+    if (DB.mode === 'cloud') { p.className = 'pill pill-on'; p.innerHTML = '<i class="led"></i>云端同步'; }
+    else { p.className = 'pill pill-off'; p.innerHTML = '<i class="led"></i>本机模式'; }
+
+    const list = items().sort(byDateTime);
+    const dates = [...new Set(list.map(i => i.date).filter(Boolean))].sort();
+    if (active === null) active = list.some(i => i.date === SK.todayStr()) ? 'today' : 'all';
+    if (active !== 'all' && active !== 'today' && !dates.includes(active))
+      active = dates.includes(SK.todayStr()) ? 'today' : (dates[0] || 'all');
+
+    const todayN = list.filter(i => i.date === SK.todayStr()).length;
+    const chips = [['today', `今天（${todayN}）`], ['all', `全部（${list.length}）`]]
+      .concat(dates.map(d => [d, d + (d === SK.todayStr() ? ' · 今天' : '')]));
+    $('#dateChips').innerHTML = chips.map(([v, l]) =>
+      `<button class="chip${v === active ? ' on' : ''}" data-v="${SK.esc(v)}">${SK.esc(l)}</button>`).join('');
+
+    const vis = visible(list);
+    const visIds = new Set(vis.map(i => i.id));
+    for (const id of [...selected]) if (!visIds.has(id)) selected.delete(id);
+
+    $('#cardGrid').innerHTML = vis.map(i => `
+      <button class="kcard${selected.has(i.id) ? ' sel' : ''}" data-id="${i.id}">
+        <span class="k-time mono">${SK.esc(i.time) || '--:--'}</span>
+        <span class="k-who"><b>${SK.esc(i.form) || '—'}<i> / </i>${SK.esc(i.classNo) || '—'}</b></span>
+        <span class="k-see">👤 ${SK.esc(i.shouldSee) || '—'}</span>
+        <span class="k-meta mono">${SK.esc(i.date) || '—'} · Room ${SK.esc(i.room) || '—'}</span>
+        ${i.remark ? `<span class="k-rmk">${SK.esc(i.remark)}</span>` : ''}
+        <span class="k-check">✓</span>
+      </button>`).join('');
+
+    const emp = $('#kioskEmpty');
+    emp.hidden = vis.length > 0;
+    emp.textContent = active === 'today' ? '今天没有预约 —— 点上方日期标签查看其他日期' : '这个日期没有预约';
+    counts(vis);
+  }
+
+  function counts(vis) {
+    vis = vis || visible(items().sort(byDateTime));
+    $('#selCount').textContent = selected.size;
+    const ps = $('#printSelected');
+    ps.textContent = `列印已选（${selected.size}）`;
+    ps.disabled = selected.size === 0;
+    const pa = $('#printAll');
+    pa.textContent = `列印全部（${vis.length}）`;
+    pa.disabled = vis.length === 0;
+  }
+
+  $('#dateChips').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    active = c.dataset.v; render();
+  });
+  $('#cardGrid').addEventListener('click', e => {
+    const c = e.target.closest('.kcard'); if (!c) return;
+    const id = c.dataset.id;
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    c.classList.toggle('sel', selected.has(id));
+    counts();
+  });
+  $('#selectAll').addEventListener('click', () => { visible(items()).forEach(i => selected.add(i.id)); render(); });
+  $('#clearSel').addEventListener('click', () => { selected.clear(); render(); });
+
+  $('#printAll').addEventListener('click', () => SK.print(visible(items().sort(byDateTime))));
+  $('#printSelected').addEventListener('click', () => SK.print(items().sort(byDateTime).filter(i => selected.has(i.id))));
+  $('#testPrint').addEventListener('click', () => SK.print([{
+    form: '3', classNo: '5A', shouldSee: 'Mr. Chan',
+    date: SK.todayStr(), time: '14:30', room: '204',
+    remark: 'Test page · 测试列印'
+  }]));
+
+  DB.init().then(() => DB.onChange(render));
+})();
+</script>
 </body>
 </html>

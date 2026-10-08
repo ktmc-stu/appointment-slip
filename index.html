@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appointment Slip 控制台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin">
+<div class="awning" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="tag">SLIP</span>
+    <div class="brand-text">
+      <h1>Appointment&nbsp;Slip 控制台</h1>
+      <p>录入 · 汇入 · 云端同步 · 80mm 小票</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <label class="school-field">
+      <span>学校名称（印在小票顶部）</span>
+      <input id="schoolInput" type="text" placeholder="SCHOOL NAME" autocomplete="off">
+    </label>
+    <span id="syncPill" class="pill pill-off"><i class="led"></i>连线中…</span>
+    <a class="btn btn-ink" href="kiosk.html">Kiosk 打印模式 →</a>
+  </div>
+</header>
+
+<main>
+  <div class="cols">
+    <!-- 左：输入 -->
+    <section>
+      <div class="panel">
+        <h2><b class="no">01</b>单笔录入</h2>
+        <form id="addForm" class="slip-form" autocomplete="off">
+          <div class="grid2">
+            <label>Form<input name="form" placeholder="e.g. 3"></label>
+            <label>Class No<input name="classNo" placeholder="e.g. 5A / 12"></label>
+          </div>
+          <label>Should see<input name="shouldSee" placeholder="e.g. Mr. Chan"></label>
+          <div class="grid3">
+            <label>Date<input type="date" name="date"></label>
+            <label>Time<input type="time" name="time"></label>
+            <label>Room<input name="room" placeholder="e.g. 204"></label>
+          </div>
+          <label>Remark<textarea name="remark" rows="2" placeholder="（可留空）"></textarea></label>
+          <div class="form-foot">
+            <label class="keep"><input type="checkbox" id="keepChk" checked>连续录入（保留日期／时间／面谈对象／房间）</label>
+            <button type="submit" class="btn btn-primary">＋ 加入清单</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2><b class="no">02</b>Excel 汇入</h2>
+        <div id="dropzone">
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+          <div class="dz-inner">
+            <div class="dz-icon">▤</div>
+            <p><b>拖放 Excel 到这里</b>，或点击选择文件</p>
+            <small>支持 .xlsx / .xls / .csv · 第一行为栏位名称</small>
+          </div>
+        </div>
+        <div id="importBox" hidden>
+          <h3>栏位对应 <small id="importFile"></small></h3>
+          <div id="mapGrid" class="map-grid"></div>
+          <h3>预览（前 5 行）</h3>
+          <div class="table-wrap"><table id="previewTable" class="tbl preview"></table></div>
+          <div class="form-foot">
+            <button class="btn btn-ghost" id="importCancel" type="button">取消</button>
+            <button class="btn btn-primary" id="importGo" type="button">⇩ 汇入 <span id="importCount">0</span> 笔</button>
+          </div>
+        </div>
+      </div>
+
+      <details class="panel help">
+        <summary><b class="no">？</b>使用与打印说明</summary>
+        <ul>
+          <li><b>跨装置同步</b>：在 <code>js/config.js</code> 填入 Firebase 配置后部署到 GitHub Pages，所有装置即时共享同一份清单；未配置时只保存在本浏览器。</li>
+          <li><b>Kiosk</b>：在接了小票机的装置打开 <code>kiosk.html</code>，点卡片选取，或直接「列印全部」。</li>
+          <li><b>打印设置</b>：纸张选 <b>80 × 140 mm</b>，边距「无」，缩放 100%，关闭页眉页脚。每张 slip 一页，底部固定附 <code>Printed at …</code>。</li>
+          <li>建议用 Chrome / Edge 打印。</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- 右：清单 -->
+    <section>
+      <div class="panel list-panel">
+        <div class="list-head">
+          <h2 style="margin:0"><b class="no">03</b>预约清单</h2>
+          <div class="list-tools">
+            <input id="searchInput" type="search" placeholder="搜寻…">
+            <select id="dateFilter"></select>
+            <span class="count-badge" id="countBadge">0</span>
+          </div>
+        </div>
+        <div class="table-wrap grow">
+          <table class="tbl" id="listTable">
+            <thead><tr>
+              <th>Form</th><th>Class No</th><th>Should see</th><th>Date</th>
+              <th>Time</th><th>Room</th><th>Remark</th><th></th>
+            </tr></thead>
+            <tbody id="listBody"></tbody>
+          </table>
+          <div id="emptyState" class="empty">清单是空的 —— 从左边加入或汇入 Excel 开始</div>
+        </div>
+        <div class="list-foot">
+          <span id="statLine" class="mono"></span>
+          <button class="btn btn-danger-ghost" id="clearAll" type="button">清空全部</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- 编辑弹窗 -->
+<div class="modal-overlay" id="editOverlay" hidden>
+  <form class="modal slip-form" id="editForm">
+    <h2>编辑 Appointment Slip</h2>
+    <div class="grid2">
+      <label>Form<input name="form"></label>
+      <label>Class No<input name="classNo"></label>
+    </div>
+    <label>Should see<input name="shouldSee"></label>
+    <div class="grid3">
+      <label>Date<input type="date" name="date"></label>
+      <label>Time<input type="time" name="time"></label>
+      <label>Room<input name="room"></label>
+    </div>
+    <label>Remark<textarea name="remark" rows="2"></textarea></label>
+    <div class="form-foot">
+      <button type="button" class="btn btn-ghost" id="editCancel">取消</button>
+      <button type="submit" class="btn btn-primary">保存修改</button>
+    </div>
+  </form>
+</div>
+
+<div id="print-root" aria-hidden="true"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

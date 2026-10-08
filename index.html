@@ -8,7 +8,162 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<style>
+/* ================= 样式 ================= */
+:root{
+  --paper:#f3efe4; --card:#fffdf6; --ink:#1b2332; --ink2:#4c5568;
+  --red:#d9481c; --yellow:#ffd23f; --green:#1e7d54; --navy:#141a26;
+  --shadow:6px 6px 0 rgba(27,35,50,.85);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'IBM Plex Sans','Noto Sans SC',system-ui,sans-serif;
+  color:var(--ink);background:var(--paper);
+  background-image:linear-gradient(rgba(27,35,50,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(27,35,50,.05) 1px,transparent 1px);
+  background-size:26px 26px;min-height:100vh;
+}
+body.admin{padding-bottom:60px}
+.mono{font-family:'IBM Plex Mono',monospace}
+.awning{height:12px;background:repeating-linear-gradient(-45deg,var(--ink) 0 16px,var(--yellow) 16px 32px);border-bottom:2px solid var(--ink)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:18px 28px;border-bottom:2px solid var(--ink);background:rgba(255,253,246,.75)}
+.brand{display:flex;align-items:center;gap:16px}
+.tag{display:inline-block;background:var(--yellow);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  font-family:'Archivo Black';letter-spacing:2px;padding:8px 12px;transform:rotate(-4deg);font-size:15px;color:var(--ink)}
+.brand h1{font-family:'Archivo Black','Noto Sans SC';font-size:clamp(20px,2.6vw,30px);line-height:1.1}
+.brand p{font-size:12px;color:var(--ink2);letter-spacing:2px;margin-top:3px}
+.topbar-right{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.school-field{display:flex;flex-direction:column;gap:4px;font-size:11px;letter-spacing:1px;color:var(--ink2);font-weight:700}
+.school-field input{min-width:230px}
+input[type=text],input[type=search],input[type=date],input[type=time],select,textarea{
+  font:inherit;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:6px;
+  padding:8px 10px;width:100%;transition:box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{outline:3px solid rgba(255,210,63,.9);outline-offset:1px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:999px;
+  padding:6px 14px;font-size:12px;font-weight:700;background:#fff;white-space:nowrap}
+.pill .led{width:9px;height:9px;border-radius:50%;background:#9aa2b1;flex:none}
+.pill-on{background:#e9f5ee}
+.pill-on .led{background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,125,84,.5)}70%{box-shadow:0 0 0 7px rgba(30,125,84,0)}100%{box-shadow:0 0 0 0 rgba(30,125,84,0)}}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;border:2px solid var(--ink);
+  border-radius:8px;background:var(--card);color:var(--ink);padding:9px 18px;cursor:pointer;text-decoration:none;
+  box-shadow:3px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s,background .15s;user-select:none}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:#c33d13}
+.btn-ink{background:var(--ink);color:var(--paper)}
+.btn-yellow{background:var(--yellow)}
+.btn-ghost{background:transparent}
+.btn-danger-ghost{background:transparent;border-color:var(--red);color:var(--red);box-shadow:3px 3px 0 rgba(217,72,28,.3)}
+.cols{display:grid;grid-template-columns:minmax(360px,460px) 1fr;gap:24px;padding:26px 28px;align-items:start;max-width:1500px;margin:0 auto}
+@media(max-width:1020px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:10px;box-shadow:var(--shadow);
+  padding:20px 22px;margin-bottom:22px;animation:rise .4s ease both}
+.panel:nth-of-type(2){animation-delay:.07s}
+details.panel{animation-delay:.14s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel h2{font-family:'Archivo Black','Noto Sans SC';font-size:17px;display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.no{font-family:'IBM Plex Mono';font-size:12px;background:var(--ink);color:var(--yellow);padding:3px 8px;
+  border-radius:4px;letter-spacing:1px;display:inline-block;transform:rotate(-2deg)}
+.slip-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;
+  letter-spacing:.8px;color:var(--ink2);margin-bottom:12px;text-transform:uppercase}
+.slip-form label input,.slip-form label textarea{font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}}
+.form-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
+.slip-form .keep{flex-direction:row;align-items:center;gap:8px;font-size:12px;color:var(--ink2);
+  text-transform:none;letter-spacing:0;font-weight:500;margin:0}
+.keep input{width:16px;height:16px;accent-color:var(--red)}
+#dropzone{border:2px dashed var(--ink);border-radius:10px;padding:26px 18px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.5);transition:background .2s,transform .2s,border-color .2s}
+#dropzone:hover{background:#fff}
+#dropzone.over{background:rgba(255,210,63,.4);transform:scale(1.015);border-color:var(--red)}
+.dz-icon{font-size:30px;margin-bottom:6px}
+#dropzone p{font-size:14px}
+#dropzone small{color:var(--ink2);font-size:12px}
+#importBox{margin-top:18px;border-top:2px dashed rgba(27,35,50,.25);padding-top:14px}
+#importBox h3{font-size:13px;letter-spacing:1px;margin:12px 0 10px}
+#importBox h3 small{color:var(--ink2);font-weight:500;letter-spacing:0}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.map-grid label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--ink2);letter-spacing:.6px}
+@media(max-width:560px){.map-grid{grid-template-columns:1fr}}
+.table-wrap{overflow:auto;border:2px solid var(--ink);border-radius:8px;background:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+.tbl.preview{min-width:520px;font-size:12.5px}
+.tbl th{background:var(--ink);color:var(--paper);font-family:'IBM Plex Mono';font-size:11px;letter-spacing:1.2px;
+  text-transform:uppercase;text-align:left;padding:9px 10px;position:sticky;top:0;white-space:nowrap;z-index:2}
+.tbl td{padding:8px 10px;border-bottom:1px dashed rgba(27,35,50,.25);vertical-align:top}
+.tbl tbody tr:hover td{background:rgba(255,210,63,.28)}
+.rowact{white-space:nowrap;text-align:right}
+.ibtn{font:inherit;font-size:12px;font-weight:700;border:1.5px solid var(--ink);background:#fff;border-radius:5px;
+  padding:3px 9px;cursor:pointer;margin-left:5px;transition:.15s}
+.ibtn:hover{background:var(--yellow);transform:translateY(-1px)}
+.ibtn.del{border-color:var(--red);color:var(--red)}
+.ibtn.del:hover{background:var(--red);color:#fff}
+.list-panel{display:flex;flex-direction:column;margin-bottom:0;position:sticky;top:14px;max-height:calc(100vh - 28px)}
+@media(max-width:1020px){.list-panel{position:static;max-height:none}}
+.list-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.list-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.list-tools input[type=search]{width:170px}
+.list-tools select{width:auto}
+.count-badge{min-width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;font-family:'IBM Plex Mono';
+  font-weight:600;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--ink);
+  box-shadow:2px 2px 0 var(--ink);transform:rotate(-4deg);font-size:14px;padding:0 6px}
+@keyframes bpop{0%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(-9deg) scale(1.35)}100%{transform:rotate(-4deg) scale(1)}}
+.count-badge.pop{animation:bpop .35s ease}
+.grow{flex:1;min-height:240px}
+.list-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+#statLine{font-size:12px;color:var(--ink2)}
+.empty{padding:44px 20px;text-align:center;color:var(--ink2);font-size:14px}
+.modal-overlay{position:fixed;inset:0;background:rgba(20,26,38,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal-overlay[hidden]{display:none}
+.modal{background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:8px 8px 0 rgba(27,35,50,.7);
+  padding:24px;width:min(560px,100%);max-height:90vh;overflow:auto;animation:pop .22s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+.modal h2{font-family:'Archivo Black','Noto Sans SC';font-size:18px;margin-bottom:16px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);
+  font-family:'IBM Plex Mono','Noto Sans SC';font-size:13px;padding:11px 20px;border-radius:8px;border:2px solid var(--yellow);
+  box-shadow:4px 4px 0 rgba(0,0,0,.25);opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast[hidden]{display:block!important;visibility:hidden}
+.help summary{cursor:pointer;font-family:'Archivo Black','Noto Sans SC';font-size:15px;display:flex;gap:10px;align-items:center;list-style:none}
+.help summary::-webkit-details-marker{display:none}
+.help[open] summary{margin-bottom:12px}
+.help ul{padding-left:20px;display:grid;gap:8px;font-size:13.5px;line-height:1.65;color:var(--ink2)}
+.help code{font-family:'IBM Plex Mono';background:rgba(27,35,50,.08);padding:1px 5px;border-radius:4px;font-size:12px}
+
+/* ================= 打印：只输出小票 80×140mm ================= */
+#print-root{display:none}
+@media print{
+  @page{size:80mm 140mm;margin:0}
+  html,body{margin:0!important;padding:0!important;background:#fff!important}
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block}
+  .slip{
+    width:80mm;height:139.5mm;box-sizing:border-box;overflow:hidden;
+    padding:6mm 5.5mm 3.5mm;display:flex;flex-direction:column;
+    background:#fff;color:#000;
+    font-family:'IBM Plex Sans','Noto Sans SC',sans-serif;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    page-break-after:always;break-after:page;
+  }
+  .slip:last-child{page-break-after:auto;break-after:auto}
+  .slip-school{font-size:12pt;font-weight:700;text-align:center;letter-spacing:.3pt;line-height:1.25}
+  .slip-title{font-family:'Archivo Black','IBM Plex Sans';font-size:13.5pt;text-align:center;text-transform:uppercase;
+    letter-spacing:.5pt;border-top:.7mm solid #000;border-bottom:.25mm solid #000;padding:1.8mm 0;margin:2.2mm 0 1mm}
+  .slip-fields{width:100%;border-collapse:collapse;margin-top:2mm}
+  .slip-fields th{width:20mm;text-align:left;vertical-align:top;font-size:9.5pt;font-weight:600;padding:1.4mm 1mm 1.4mm 0;white-space:nowrap}
+  .slip-fields td{font-size:10.5pt;font-weight:700;padding:1.4mm 0;border-bottom:.2mm dotted #888;word-break:break-word;line-height:1.3}
+  .slip-fields .rmk{font-weight:500;font-size:9.5pt;max-height:33mm;overflow:hidden;word-break:break-word}
+  .slip-printed{margin-top:auto;padding-top:1.6mm;border-top:.3mm dashed #000;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:7.5pt;letter-spacing:.2pt}
+}
+</style>
 </head>
 <body class="admin">
 <div class="awning" aria-hidden="true"></div>
@@ -33,7 +188,6 @@
 
 <main>
   <div class="cols">
-    <!-- 左：输入 -->
     <section>
       <div class="panel">
         <h2><b class="no">01</b>单笔录入</h2>
@@ -81,15 +235,13 @@
       <details class="panel help">
         <summary><b class="no">？</b>使用与打印说明</summary>
         <ul>
-          <li><b>跨装置同步</b>：在 <code>js/config.js</code> 填入 Firebase 配置后部署到 GitHub Pages，所有装置即时共享同一份清单；未配置时只保存在本浏览器。</li>
+          <li><b>跨装置同步</b>：在本页源码顶部的 <b>APP_CONFIG</b> 填入 Firebase 配置（见 README），所有装置即时共享清单；未配置时只保存在本浏览器。</li>
           <li><b>Kiosk</b>：在接了小票机的装置打开 <code>kiosk.html</code>，点卡片选取，或直接「列印全部」。</li>
-          <li><b>打印设置</b>：纸张选 <b>80 × 140 mm</b>，边距「无」，缩放 100%，关闭页眉页脚。每张 slip 一页，底部固定附 <code>Printed at …</code>。</li>
-          <li>建议用 Chrome / Edge 打印。</li>
+          <li><b>打印</b>：只会输出小票内容（网页界面自动隐藏）。纸张选 <b>80 × 140 mm</b>、边距「无」、缩放 100%、关闭页眉页脚。</li>
         </ul>
       </details>
     </section>
 
-    <!-- 右：清单 -->
     <section>
       <div class="panel list-panel">
         <div class="list-head">
@@ -119,7 +271,6 @@
   </div>
 </main>
 
-<!-- 编辑弹窗 -->
 <div class="modal-overlay" id="editOverlay" hidden>
   <form class="modal slip-form" id="editForm">
     <h2>编辑 Appointment Slip</h2>
@@ -145,9 +296,391 @@
 <div id="toast" class="toast" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/config.js"></script>
-<script src="js/db.js"></script>
-<script src="js/common.js"></script>
-<script src="js/admin.js"></script>
+<script>
+/* ========== 设定：学校名 + Firebase（跨装置同步） ========== */
+window.APP_CONFIG = {
+  DEFAULT_SCHOOL_NAME: "SCHOOL NAME",
+  firebase: {
+    apiKey:            "",
+    authDomain:        "",
+    databaseURL:       "",   // ← 跨装置同步必填
+    projectId:         "",
+    storageBucket:     "",
+    messagingSenderId: "",
+    appId:             ""
+  }
+};
+
+/* ========== 同步层 ========== */
+(function () {
+  const LS_A = 'asl_appointments', LS_S = 'asl_settings';
+  const listeners = new Set();
+  const state = { appointments: {}, settings: {} };
+  let cloud = null;
+  const uid = () => 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const emit = () => listeners.forEach(cb => { try { cb(state); } catch (e) { console.error(e); } });
+  function loadLocal() {
+    try { state.appointments = JSON.parse(localStorage.getItem(LS_A) || '{}'); } catch (e) { state.appointments = {}; }
+    try { state.settings = JSON.parse(localStorage.getItem(LS_S) || '{}'); } catch (e) { state.settings = {}; }
+  }
+  const saveA = () => localStorage.setItem(LS_A, JSON.stringify(state.appointments));
+  const saveS = () => localStorage.setItem(LS_S, JSON.stringify(state.settings));
+  function bootLocal() {
+    DB.mode = 'local'; loadLocal(); emit();
+    window.addEventListener('storage', e => { if (e.key === LS_A || e.key === LS_S) { loadLocal(); emit(); } });
+  }
+  window.DB = {
+    mode: 'boot', state,
+    init() {
+      const cfg = (window.APP_CONFIG && window.APP_CONFIG.firebase) || {};
+      if (cfg.databaseURL) {
+        DB.mode = 'connecting';
+        return Promise.all([
+          import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js'),
+          import('https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js')
+        ]).then(([am, dm]) => {
+          const app = am.initializeApp(cfg);
+          const db = dm.getDatabase(app);
+          cloud = { db, ref: dm.ref, set: dm.set, update: dm.update, remove: dm.remove };
+          DB.mode = 'cloud';
+          dm.onValue(dm.ref(db, '/'), snap => {
+            const v = snap.val() || {};
+            state.appointments = v.appointments || {};
+            state.settings = v.settings || {};
+            emit();
+          }, err => console.error('RTDB', err));
+        }).catch(err => { console.warn('Firebase 连接失败，改用本机模式', err); bootLocal(); });
+      }
+      bootLocal();
+      return Promise.resolve();
+    },
+    onChange(cb) { listeners.add(cb); cb(state); },
+    async add(data) {
+      const id = uid(); const rec = { ...data, createdAt: Date.now() };
+      if (cloud) await cloud.set(cloud.ref(cloud.db, 'appointments/' + id), rec);
+      else { state.appointments[id] = rec; saveA(); emit(); }
+      return id;
+    },
+    async importMany(rows) {
+      const recs = rows.map(d => [uid(), { ...d, createdAt: Date.now() }]);
+      if (cloud) {
+        const multi = {}; recs.forEach(([id, r]) => multi['appointments/' + id] = r);
+        await cloud.update(cloud.ref(cloud.db, '/'), multi);
+      } else { recs.forEach(([id, r]) => state.appointments[id] = r); saveA(); emit(); }
+      return recs.length;
+    },
+    async update(id, data) {
+      if (cloud) await cloud.update(cloud.ref(cloud.db, 'appointments/' + id), data);
+      else { Object.assign(state.appointments[id] || {}, data); saveA(); emit(); }
+    },
+    async remove(id) {
+      if (cloud) await cloud.remove(cloud.ref(cloud.db, 'appointments/' + id));
+      else { delete state.appointments[id]; saveA(); emit(); }
+    },
+    async clearAll() {
+      if (cloud) await cloud.set(cloud.ref(cloud.db, 'appointments'), null);
+      else { state.appointments = {}; saveA(); emit(); }
+    },
+    async setSettings(patch) {
+      if (cloud) await cloud.update(cloud.ref(cloud.db, 'settings'), patch);
+      else { Object.assign(state.settings, patch); saveS(); emit(); }
+    }
+  };
+})();
+
+/* ========== 共用工具 + slip 渲染 + 打印 ========== */
+window.SK = (function () {
+  const pad = n => String(n).padStart(2, '0');
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const todayStr = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const nowStamp = (d = new Date()) => `${todayStr(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const FIELDS = [
+    ['form', 'Form'], ['classNo', 'Class No'], ['shouldSee', 'Should see'],
+    ['date', 'Date'], ['time', 'Time'], ['room', 'Room'], ['remark', 'Remark']
+  ];
+  function schoolName() {
+    return (DB.state.settings && DB.state.settings.schoolName)
+      || (window.APP_CONFIG && APP_CONFIG.DEFAULT_SCHOOL_NAME) || 'SCHOOL NAME';
+  }
+  function slipHTML(a, printedAt) {
+    const rows = FIELDS.map(([k, label]) => {
+      const v = esc(a[k]);
+      const inner = k === 'remark' ? `<div class="rmk">${v || '&nbsp;'}</div>` : (v || '&nbsp;');
+      return `<tr><th>${label}:</th><td>${inner}</td></tr>`;
+    }).join('');
+    return `<div class="slip">
+      <div class="slip-school">${esc(schoolName())}</div>
+      <div class="slip-title">Appointment Slip</div>
+      <table class="slip-fields">${rows}</table>
+      <div class="slip-printed">Printed at ${printedAt}</div>
+    </div>`;
+  }
+  function print(items) {
+    if (!items.length) { toast('没有可列印的项目'); return; }
+    const root = document.getElementById('print-root');
+    const at = nowStamp();
+    root.innerHTML = items.map(a => slipHTML(a, at)).join('');
+    setTimeout(() => window.print(), 150);
+    let done = false;
+    const clean = () => { if (!done) { done = true; root.innerHTML = ''; } };
+    window.addEventListener('afterprint', clean, { once: true });
+    setTimeout(clean, 30000);
+  }
+  let toastTimer;
+  function toast(msg) {
+    const t = document.getElementById('toast'); if (!t) return;
+    t.textContent = msg; t.hidden = false;
+    requestAnimationFrame(() => t.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  function normalizeDate(v) {
+    if (v == null || v === '') return '';
+    if (v instanceof Date && !isNaN(v)) return todayStr(v);
+    const s = String(v).trim();
+    if (/^\d{5}(\.\d+)?$/.test(s)) {
+      const d = new Date(Date.UTC(1899, 11, 30) + parseFloat(s) * 864e5);
+      return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+    }
+    let m = s.match(/^(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
+    if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+    m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if (m) {
+      const a = +m[1], b = +m[2], y = m[3].length === 2 ? '20' + m[3] : m[3];
+      const swap = a > 12 && b <= 12;
+      return `${y}-${pad(swap ? b : a)}-${pad(swap ? a : b)}`;
+    }
+    const d = new Date(s);
+    return isNaN(d) ? s : todayStr(d);
+  }
+  function normalizeTime(v) {
+    if (v == null || v === '') return '';
+    if (v instanceof Date && !isNaN(v)) return `${pad(v.getHours())}:${pad(v.getMinutes())}`;
+    const s = String(v).trim();
+    let m = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([apAP][mM])?/);
+    if (m) {
+      let h = +m[1]; const ap = (m[3] || '').toLowerCase();
+      if (ap === 'pm' && h < 12) h += 12;
+      if (ap === 'am' && h === 12) h = 0;
+      return `${pad(h)}:${m[2]}`;
+    }
+    m = s.match(/^(\d{3,4})$/);
+    if (m) { const t = m[1].padStart(4, '0'); return `${t.slice(0, 2)}:${t.slice(2)}`; }
+    return s;
+  }
+  return { pad, esc, todayStr, nowStamp, FIELDS, schoolName, slipHTML, print, toast, normalizeDate, normalizeTime };
+})();
+
+/* ========== 控制台逻辑 ========== */
+(function () {
+  const $ = s => document.querySelector(s);
+  const F = SK.FIELDS;
+  const addForm = $('#addForm'), editForm = $('#editForm'), schoolInput = $('#schoolInput');
+  addForm.elements.date.value = SK.todayStr();
+
+  function setPill() {
+    const p = $('#syncPill');
+    if (DB.mode === 'cloud') { p.className = 'pill pill-on'; p.innerHTML = '<i class="led"></i>云端同步'; }
+    else if (DB.mode === 'connecting') { p.className = 'pill pill-off'; p.innerHTML = '<i class="led"></i>连线中…'; }
+    else { p.className = 'pill pill-off'; p.innerHTML = '<i class="led"></i>本机模式'; }
+  }
+  schoolInput.addEventListener('change', () => {
+    DB.setSettings({ schoolName: schoolInput.value.trim() || APP_CONFIG.DEFAULT_SCHOOL_NAME });
+  });
+
+  addForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(addForm); const rec = {};
+    F.forEach(([k]) => rec[k] = String(fd.get(k) || '').trim());
+    if (!Object.values(rec).some(Boolean)) return SK.toast('请先填写至少一个栏位');
+    await DB.add(rec);
+    SK.toast('已加入清单 ✓');
+    if ($('#keepChk').checked) {
+      addForm.elements.form.value = ''; addForm.elements.classNo.value = '';
+      addForm.elements.remark.value = ''; addForm.elements.form.focus();
+    } else { addForm.reset(); addForm.elements.date.value = SK.todayStr(); }
+  });
+
+  const tbody = $('#listBody'), dateFilter = $('#dateFilter'), searchInput = $('#searchInput');
+  const view = { q: '', date: 'all' };
+  let lastCount = -1;
+  const allItems = () => Object.entries(DB.state.appointments || {}).map(([id, a]) => ({ id, ...a }));
+  const byDateTime = (a, b) =>
+    String(a.date || '').localeCompare(String(b.date || '')) ||
+    String(a.time || '').localeCompare(String(b.time || '')) ||
+    (a.createdAt || 0) - (b.createdAt || 0);
+
+  function render() {
+    setPill();
+    if (document.activeElement !== schoolInput) {
+      const s = SK.schoolName();
+      if (schoolInput.value !== s) schoolInput.value = s;
+    }
+    const items = allItems();
+    const dates = [...new Set(items.map(i => i.date).filter(Boolean))].sort();
+    dateFilter.innerHTML =
+      [`<option value="all">全部日期</option>`, `<option value="today">今天</option>`]
+        .concat(dates.map(d => `<option value="${SK.esc(d)}">${SK.esc(d)}</option>`)).join('');
+    dateFilter.value = [...dateFilter.options].some(o => o.value === view.date) ? view.date : 'all';
+    view.date = dateFilter.value;
+
+    let list = items;
+    if (view.date === 'today') list = list.filter(i => i.date === SK.todayStr());
+    else if (view.date !== 'all') list = list.filter(i => i.date === view.date);
+    if (view.q) {
+      const q = view.q.toLowerCase();
+      list = list.filter(i => F.some(([k]) => String(i[k] || '').toLowerCase().includes(q)));
+    }
+    list.sort(byDateTime);
+
+    tbody.innerHTML = list.map(i => `<tr data-id="${i.id}">
+        ${F.map(([k]) => `<td>${SK.esc(i[k])}</td>`).join('')}
+        <td class="rowact">
+          <button class="ibtn" data-act="print" title="列印这一张">印</button>
+          <button class="ibtn" data-act="edit">编辑</button>
+          <button class="ibtn del" data-act="del">删</button>
+        </td></tr>`).join('');
+
+    $('#emptyState').style.display = list.length ? 'none' : 'block';
+    const badge = $('#countBadge');
+    badge.textContent = list.length;
+    if (list.length !== lastCount) {
+      badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop');
+      lastCount = list.length;
+    }
+    const todayN = items.filter(i => i.date === SK.todayStr()).length;
+    $('#statLine').textContent = `共 ${items.length} 笔 · 今天 ${todayN} 笔`;
+  }
+
+  searchInput.addEventListener('input', () => { view.q = searchInput.value.trim(); render(); });
+  dateFilter.addEventListener('change', () => { view.date = dateFilter.value; render(); });
+
+  tbody.addEventListener('click', async e => {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const id = btn.closest('tr').dataset.id;
+    const rec = DB.state.appointments[id]; if (!rec) return;
+    if (btn.dataset.act === 'del') {
+      if (confirm(`删除这笔预约？\n${[rec.form, rec.classNo, rec.shouldSee].filter(Boolean).join(' / ')}`)) {
+        await DB.remove(id); SK.toast('已删除');
+      }
+    } else if (btn.dataset.act === 'print') { SK.print([rec]); }
+    else {
+      F.forEach(([k]) => { editForm.elements[k].value = rec[k] || ''; });
+      editForm.dataset.id = id;
+      $('#editOverlay').hidden = false;
+      editForm.elements.form.focus();
+    }
+  });
+
+  $('#editCancel').addEventListener('click', () => $('#editOverlay').hidden = true);
+  $('#editOverlay').addEventListener('click', e => { if (e.target === $('#editOverlay')) $('#editOverlay').hidden = true; });
+  editForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(editForm); const patch = {};
+    F.forEach(([k]) => patch[k] = String(fd.get(k) || '').trim());
+    await DB.update(editForm.dataset.id, patch);
+    $('#editOverlay').hidden = true;
+    SK.toast('已保存 ✓');
+  });
+
+  $('#clearAll').addEventListener('click', async () => {
+    const n = Object.keys(DB.state.appointments || {}).length;
+    if (!n) return SK.toast('清单已经是空的');
+    if (confirm(`确定清空全部 ${n} 笔预约？无法还原。`)) { await DB.clearAll(); SK.toast('已清空'); }
+  });
+
+  /* ---- Excel 汇入 ---- */
+  const dz = $('#dropzone'), fileInput = $('#fileInput');
+  let importRows = [], importHeaders = [];
+  const ALIASES = {
+    form: ['form', 'grade', 'level', '年级', '班級', '年級'],
+    classNo: ['class no', 'classno', 'class no.', 'class number', 'class', '座號', '座号', '學號', '学号', '班別', '班号'],
+    shouldSee: ['should see', 'shouldsee', 'teacher', 'staff', '面見', '面见', '面見老師', '导师', '教師', '面谈对象', '会见'],
+    date: ['date', '日期', 'day'],
+    time: ['time', '時間', '时间'],
+    room: ['room', 'room no', 'location', '房間', '房间', '地點', '地点', '室'],
+    remark: ['remark', 'remarks', 'note', 'notes', '備註', '备注', '說明']
+  };
+  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+  function guess(header) {
+    const h = norm(header); if (!h) return '';
+    for (const [k, list] of Object.entries(ALIASES)) if (list.some(a => norm(a) === h)) return k;
+    for (const [k, list] of Object.entries(ALIASES))
+      if (list.some(a => norm(a) && (h.includes(norm(a)) || norm(a).includes(h)))) return k;
+    return '';
+  }
+  dz.addEventListener('click', () => fileInput.click());
+  ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); fileInput.value = ''; });
+
+  async function handleFile(file) {
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      const hi = rows.findIndex(r => r.some(c => String(c).trim() !== ''));
+      if (hi < 0) throw new Error('找不到标题行');
+      importHeaders = rows[hi].map(c => String(c).trim());
+      importRows = rows.slice(hi + 1);
+      $('#importFile').textContent = '· ' + file.name;
+      buildMapping();
+      $('#importBox').hidden = false;
+      $('#importBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (err) { SK.toast('无法读取文件：' + err.message); }
+  }
+  function buildMapping() {
+    const grid = $('#mapGrid');
+    grid.innerHTML = F.map(([k, label]) => {
+      const selIdx = importHeaders.findIndex(h => guess(h) === k);
+      const opts = ['<option value="">（忽略）</option>'].concat(
+        importHeaders.map((h, ix) => `<option value="${ix}"${ix === selIdx ? ' selected' : ''}>${SK.esc(h) || '(空)'}</option>`)
+      ).join('');
+      return `<label>${label}<select data-key="${k}">${opts}</select></label>`;
+    }).join('');
+    grid.querySelectorAll('select').forEach(s => s.addEventListener('change', renderPreview));
+    renderPreview();
+  }
+  function currentMapping() {
+    const map = {};
+    $('#mapGrid').querySelectorAll('select').forEach(s => { if (s.value !== '') map[s.dataset.key] = +s.value; });
+    return map;
+  }
+  function mappedRows() {
+    const map = currentMapping();
+    return importRows.map(r => {
+      const rec = {};
+      for (const [k, ix] of Object.entries(map)) {
+        let v = r[ix] ?? '';
+        if (k === 'date') v = SK.normalizeDate(v);
+        if (k === 'time') v = SK.normalizeTime(v);
+        rec[k] = String(v).trim();
+      }
+      return rec;
+    }).filter(r => Object.values(r).some(Boolean));
+  }
+  function renderPreview() {
+    const rows = mappedRows();
+    $('#importCount').textContent = rows.length;
+    const keys = F.map(f => f[0]);
+    const head = '<thead><tr>' + F.map(([, l]) => `<th>${l}</th>`).join('') + '</tr></thead>';
+    const body = '<tbody>' + rows.slice(0, 5).map(r =>
+      '<tr>' + keys.map(k => `<td>${SK.esc(r[k])}</td>`).join('') + '</tr>').join('') + '</tbody>';
+    $('#previewTable').innerHTML = head + body;
+  }
+  $('#importCancel').addEventListener('click', () => $('#importBox').hidden = true);
+  $('#importGo').addEventListener('click', async () => {
+    const rows = mappedRows();
+    if (!rows.length) return SK.toast('没有可汇入的数据');
+    const n = await DB.importMany(rows);
+    SK.toast(`已汇入 ${n} 笔 ✓`);
+    $('#importBox').hidden = true;
+  });
+
+  DB.init().then(() => DB.onChange(render));
+})();
+</script>
 </body>
 </html>

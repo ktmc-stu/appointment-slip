@@ -14,12 +14,25 @@
 @media print{
   body *{visibility:hidden}
   #printArea,#printArea *{visibility:visible}
-  #printArea{display:block;position:absolute;left:0;top:0}
   
-  /* 預約條樣式 */
+  /* 🟢 修正：寬度改為 72mm 並水平置中，避開打印機左側硬體盲區 */
+  #printArea{
+    display:block !important; 
+    position:absolute; 
+    left:50%; 
+    top:0; 
+    transform:translateX(-50%); 
+    width:72mm;
+  }
+  
+  /* 預約條樣式 (72mm 寬) */
   #printArea .s-page{
-    width:80mm !important; padding:0 2mm !important; min-height:140mm;
-    box-sizing:border-box; display:flex; flex-direction:column;
+    width:72mm !important; 
+    padding:0 2mm !important; 
+    min-height:140mm;
+    box-sizing:border-box; 
+    display:flex; 
+    flex-direction:column;
     font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;
     font-size:13px; line-height:1.6; color:#000;
   }
@@ -35,9 +48,9 @@
   #printArea .s-page .s-remark-text{line-height:1.6; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere;}
   #printArea .s-page .s-foot{margin-top:auto; padding-top:3mm; font-size:11px; line-height:1.5;}
 
-  /* 🟩 分類黑條樣式 (1cm 高，強制純黑) */
+  /* 🟩 分類黑條樣式 (72mm 寬，1cm 高，強制純黑) */
   #printArea.divider-page{
-    width:80mm !important; 
+    width:72mm !important; 
     height:10mm !important; 
     background:#000 !important; 
     margin:0 !important; 
@@ -75,7 +88,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-<!-- 同層目錄引用核心與設定 -->
 <script src="config.js"></script>
 <script src="appt-core.js"></script>
 
@@ -203,6 +215,6 @@ $('btnClearQueue').onclick = async () => {
   log('隊列已清空 Queue cleared');
 };
 
-log('⚙️ 系統就緒 System ready');
+log('⚙️ 系統就緒 System ready (72mm Centered)');
 </script>
 </body></html>

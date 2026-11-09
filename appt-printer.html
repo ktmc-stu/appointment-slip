@@ -44,11 +44,18 @@
   
   #printArea .s-page .s-title{font-size:16px; font-weight:700; text-align:center; margin:1.5mm 0 3mm; letter-spacing:1px;}
   
-  /* 表格：縮小行距與內距 */
-  #printArea .s-page .s-table{width:100%; border-collapse:collapse;}
+  /* 🟢 修正表格：強制移除 style.css 帶入的圓角與裁切，縮小行距 */
+  #printArea .s-page .s-table{
+    width:100%; 
+    border-collapse:collapse;
+    border-radius:0 !important;      /* 強制取消圓角 */
+    overflow:visible !important;     /* 強制取消裁切，防止文字被切掉 */
+    background:transparent !important;
+    box-shadow:none !important;
+  }
   #printArea .s-page .s-table th,#printArea .s-page .s-table td{
-    border:none; 
-    padding:0.8mm 0; 
+    border:none !important;          /* 強制取消 style.css 的底線 */
+    padding:0.8mm 0 !important; 
     line-height:1.3; 
     text-align:left; 
     vertical-align:top; 
@@ -230,6 +237,6 @@ $('btnClearQueue').onclick = async () => {
   log('隊列已清空 Queue cleared');
 };
 
-log('⚙️ 系統就緒 System ready');
+log('⚙️ 系統就緒 System ready (Fixed Table Corners)');
 </script>
 </body></html>

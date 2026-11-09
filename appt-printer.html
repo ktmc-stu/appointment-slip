@@ -1,10 +1,10 @@
 <!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>APPT Printer 預約條列印端</title>
+<!-- 引用籌號系統樣式：確保字體與抬頭尺寸完全一致 Reuse queue system stylesheet for identical font & header sizes -->
+<link rel="stylesheet" href="../css/style.css">
 <style>
-body{margin:0;font-family:"Noto Sans TC","PingFang HK","Microsoft JhengHei",sans-serif;background:#f1f5f9;color:#0f172a}
-.topbar{display:flex;align-items:center;padding:16px 22px;background:#0f172a;color:#fff;font-size:22px;font-weight:800}
-.topbar .chip{margin-left:auto;background:#334155;border-radius:999px;padding:8px 16px;font-size:15px;font-weight:700}
+body{margin:0;background:#f1f5f9;color:#0f172a}
 .wrap{max-width:900px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
 .card{background:#fff;border:2px solid #94a3b8;border-radius:16px;padding:20px}
 .card h3{margin:0 0 12px;font-size:20px}
@@ -40,8 +40,8 @@ const printer = APPT.startPrinter({ onLog: log, onCount: n => { $('countChip').t
 
 $('btnTest').onclick = () => {
   if (!confirm('Test print a sample slip?\n測試列印樣本預約條？')) return;
-  printer.testPrint({ no:'AP-TEST', name:'Chan Tai Man 陳大文', form:'3', classNo:'15', shouldSee:'Mr Wong',
-    date:APPT.todayStr(), time:'12:00', place:'Office 校務處', remark:'Sample 樣本', issued:APPT.nowLabel() });
+  printer.testPrint({ name:'Chan Tai Man', form:'3', classNo:'15', shouldSee:'Mr Wong',
+    date:APPT.todayStr(), time:'12:00', place:'Office', remark:'Sample slip', issued:APPT.nowLabel() });
 };
 $('btnClear').onclick = async () => {
   if (!confirm('Clear all appointment print queue?\n清空所有預約列印隊列？')) return;

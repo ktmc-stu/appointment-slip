@@ -1,0 +1,154 @@
+<!doctype html><html lang="zh-HK"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Appointment Slip 預約條</title>
+<style>
+body{margin:0;font-family:"Noto Sans TC","PingFang HK","Microsoft JhengHei",sans-serif;background:#f1f5f9;color:#0f172a}
+.topbar{display:flex;align-items:center;padding:16px 22px;background:#0f172a;color:#fff;font-size:22px;font-weight:800}
+.topbar .chip{margin-left:auto;background:#334155;border-radius:999px;padding:8px 16px;font-size:15px;font-weight:700}
+.wrap{max-width:1080px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
+.card{background:#fff;border:2px solid #94a3b8;border-radius:16px;padding:20px}
+.card h3{margin:0 0 12px;font-size:20px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:800px){.g{grid-template-columns:1fr}}
+.g label{font-weight:700;font-size:14px;display:block;margin-bottom:4px}
+.g input,.g textarea{width:100%;border:1px solid #94a3b8;border-radius:10px;padding:10px 12px;font-size:16px;box-sizing:border-box}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
+button.act{border:0;border-radius:12px;padding:14px 22px;font-size:17px;font-weight:800;color:#fff;background:#b45309;cursor:pointer}
+button.act2{background:#475569}
+button.act3{background:#1d4ed8}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left}
+.muted{color:#475569;font-size:13px;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#111827ee;color:#fff;padding:12px 22px;border-radius:999px;opacity:0;transition:.25s;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head><body>
+<div class="topbar"><span>📅 Appointment Slip 預約條</span><span class="chip" id="topChip">—</span></div>
+<div class="wrap">
+  <div class="card">
+    <h3>Excel Import 批量匯入</h3>
+    <p class="muted">欄位順序／表頭：Name, Form, Class No., Should See, Date, Time, Place, Remark（Date 格式 YYYY-MM-DD；Time 格式 HH:MM）。<br>
+    Columns: Name, Form, Class No., Should See, Date, Time, Place, Remark.</p>
+    <div class="row" style="margin-top:6px">
+      <input type="file" id="fExcel" accept=".xlsx,.xls,.csv" style="flex:1">
+      <button class="act3" id="btnTemplate">Download Template 下載模板</button>
+    </div>
+    <p class="muted" id="importStatus"></p>
+  </div>
+
+  <div class="card">
+    <h3>New Appointment 單獨輸入</h3>
+    <div class="g">
+      <div><label>Name 姓名</label><input id="fName"></div>
+      <div><label>Form 級別</label><input id="fForm" placeholder="e.g. 3"></div>
+      <div><label>Class No. 班號</label><input id="fClassNo" placeholder="e.g. 15"></div>
+      <div><label>Should See 應見</label><input id="fShouldSee" placeholder="e.g. Mr Wong"></div>
+      <div><label>Date 日期</label><input id="fDate" type="date"></div>
+      <div><label>Time 時間</label><input id="fTime" type="time"></div>
+      <div><label>Place 地點</label><input id="fPlace"></div>
+      <div><label>Copies 份數</label><input id="fCopies" type="number" min="1" max="10" value="1"></div>
+      <div style="grid-column:1/-1"><label>Remark 備註</label><textarea id="fRemark" rows="2"></textarea></div>
+    </div>
+    <div class="row">
+      <button class="act" id="btnSubmit">Submit & Print 提交並列印</button>
+      <button class="act act2" id="btnReset">Reset 重置</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Today's Records 今日記錄</h3>
+    <div style="overflow:auto"><table>
+      <thead><tr><th>No 編號</th><th>Name 姓名</th><th>Form 級</th><th>Cl.No 班號</th><th>Should See 應見</th><th>Date 日期</th><th>Time 時間</th><th>Place 地點</th><th>Actions 操作</th></tr></thead>
+      <tbody id="recBody"></tbody>
+    </table></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script src="appt-core.js"></script>
+<script>
+APPT.init();
+const $ = id => document.getElementById(id);
+const toast = m => { const t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); };
+let recs = {};
+$('fDate').value = APPT.todayStr();
+
+APPT.onRecords(v => { recs = v; render(); });
+function render(){
+  const rows = Object.entries(recs).filter(([k,r])=>r.date===APPT.todayStr()).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  $('topChip').textContent = 'Today 今日：' + rows.length;
+  $('recBody').innerHTML = rows.map(([k,r])=>`<tr>
+    <td><b>${APPT.esc(r.no)}</b></td><td>${APPT.esc(r.name)}</td><td>${APPT.esc(r.form)}</td><td>${APPT.esc(r.classNo)}</td>
+    <td>${APPT.esc(r.shouldSee)}</td><td>${APPT.esc(r.date)}</td><td>${APPT.esc(r.time)}</td><td>${APPT.esc(r.place)}</td>
+    <td><button class="act act2" style="padding:6px 10px;font-size:13px" onclick="apptReprint('${k}')">Reprint 重印</button></td></tr>`).join('')
+    || '<tr><td colspan="9">No records 暫無記錄</td></tr>';
+}
+window.apptReprint = k => {
+  const r = recs[k]; if(!r) return;
+  if (!confirm(`Reprint ${r.no}?\n重印 ${r.no}？`)) return;
+  APPT.reprint(r).then(()=>toast('Queued 已入隊列：'+r.no));
+};
+
+/* ===== Excel 匯入 Excel import ===== */
+const norm = s => String(s).toLowerCase().replace(/[^a-z]/g,'');
+function fmtDate(v){ if (v instanceof Date){ const p=n=>String(n).padStart(2,'0'); return `${v.getFullYear()}-${p(v.getMonth()+1)}-${p(v.getDate())}`; } return String(v||'').trim(); }
+function fmtTime(v){ if (v instanceof Date){ const p=n=>String(n).padStart(2,'0'); return `${p(v.getHours())}:${p(v.getMinutes())}`; } return String(v||'').trim(); }
+
+$('btnTemplate').onclick = () => {
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Name','Form','Class No.','Should See','Date','Time','Place','Remark'],
+    ['Chan Tai Man','3','15','Mr Wong','2026-01-15','12:00','Office','Bring homework 帶同作業']
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Appointments');
+  XLSX.writeFile(wb, 'appointment_template.xlsx');
+};
+
+$('fExcel').addEventListener('change', function(){
+  const f = this.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try{
+      const wb = XLSX.read(e.target.result, { type:'array', cellDates:true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      const list = raw.map(r => {
+        const o = {}; Object.keys(r).forEach(k => { o[norm(k)] = r[k]; });
+        return {
+          name: String(o.name||'').trim(), form: String(o.form||'').trim(),
+          classNo: String(o.classno||o.class||'').trim(), shouldSee: String(o.shouldsee||'').trim(),
+          date: fmtDate(o.date), time: fmtTime(o.time),
+          place: String(o.place||'').trim(), remark: String(o.remark||'').trim(), copies: 1
+        };
+      }).filter(x => x.name && x.date && x.time);
+      if (!list.length){ $('importStatus').textContent = '⚠️ 沒有有效資料（需有 Name、Date、Time）。 No valid rows.'; return; }
+      if (!confirm(`匯入 ${list.length} 筆並加入列印隊列？\nImport ${list.length} records and queue printing?`)) return;
+      let ok = 0;
+      for (const item of list){ await APPT.createRecord(item); ok++; }
+      $('importStatus').textContent = `✅ 已匯入 ${ok} 筆並送入列印隊列。 Imported & queued.`;
+      toast('Imported 已匯入：' + ok);
+    }catch(err){ $('importStatus').textContent = '⚠️ 解析失敗 Parse failed: ' + err.message; }
+  };
+  reader.readAsArrayBuffer(f);
+  this.value = '';
+});
+
+/* ===== 單獨輸入 Single entry ===== */
+$('btnReset').onclick = () => { ['fName','fForm','fClassNo','fShouldSee','fTime','fPlace','fRemark'].forEach(id=>$(id).value=''); $('fDate').value=APPT.todayStr(); $('fCopies').value=1; };
+$('btnSubmit').onclick = async () => {
+  const f = { name:$('fName').value.trim(), form:$('fForm').value.trim(), classNo:$('fClassNo').value.trim(),
+              shouldSee:$('fShouldSee').value.trim(), date:$('fDate').value, time:$('fTime').value,
+              place:$('fPlace').value.trim(), remark:$('fRemark').value.trim(),
+              copies:Math.max(1,Math.min(10,+$('fCopies').value||1)) };
+  if (!f.name || !f.date || !f.time) return toast('Please fill Name, Date & Time 請填寫姓名、日期及時間');
+  if (!confirm('Submit and queue printing?\n提交並加入列印隊列？')) return;
+  const rec = await APPT.createRecord(f);
+  toast('Queued 已入隊列：' + rec.no);
+  $('btnReset').onclick();
+};
+</script>
+</body></html>

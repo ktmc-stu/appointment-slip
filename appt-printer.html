@@ -15,18 +15,37 @@
   body *{visibility:hidden}
   #printArea,#printArea *{visibility:visible}
   #printArea{display:block;position:absolute;left:0;top:0}
-  #printArea .s-page{width:80mm !important;padding:0 2mm !important;min-height:140mm;box-sizing:border-box;display:flex;flex-direction:column;font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;font-size:13px; line-height:1.6; color:#000;}
-  #printArea .s-page .t-head{display:flex; align-items:center; gap:2.5mm; padding-bottom:2.5mm; margin-bottom:3mm;border-bottom:0.3mm solid #000;}
+  
+  /* 預約條樣式 */
+  #printArea .s-page{
+    width:80mm !important; padding:0 2mm !important; min-height:140mm;
+    box-sizing:border-box; display:flex; flex-direction:column;
+    font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;
+    font-size:13px; line-height:1.6; color:#000;
+  }
+  #printArea .s-page .t-head{display:flex; align-items:center; gap:2.5mm; padding-bottom:2.5mm; margin-bottom:3mm; border-bottom:0.3mm solid #000;}
   #printArea .s-page .t-head img{width:14mm; height:14mm; object-fit:contain;}
   #printArea .s-page .t-school-zh{font-size:22px; font-weight:600; line-height:1.25; letter-spacing:1px}
-  #printArea .s-page .s-title{font-size:18px; font-weight:700; text-align:center;margin:2mm 0 4mm; letter-spacing:1px;}
+  #printArea .s-page .s-title{font-size:18px; font-weight:700; text-align:center; margin:2mm 0 4mm; letter-spacing:1px;}
   #printArea .s-page .s-table{width:100%; border-collapse:collapse;}
-  #printArea .s-page .s-table th,#printArea .s-page .s-table td{border:none; padding:2mm 0; text-align:left; vertical-align:top;white-space:normal; word-break:break-word; overflow-wrap:anywhere;}
+  #printArea .s-page .s-table th,#printArea .s-page .s-table td{border:none; padding:2mm 0; text-align:left; vertical-align:top; white-space:normal; word-break:break-word; overflow-wrap:anywhere;}
   #printArea .s-page .s-table th{width:38%; font-weight:600;}
   #printArea .s-page .s-div{border-top:0.3mm solid #000; margin:3mm 0 2mm;}
   #printArea .s-page .s-remark-label{font-weight:600; margin-bottom:1mm;}
   #printArea .s-page .s-remark-text{line-height:1.6; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere;}
   #printArea .s-page .s-foot{margin-top:auto; padding-top:3mm; font-size:11px; line-height:1.5;}
+
+  /* 🟩 分類黑條樣式 (1cm 高，強制純黑) */
+  #printArea.divider-page{
+    width:80mm !important; 
+    height:10mm !important; 
+    background:#000 !important; 
+    margin:0 !important; 
+    padding:0 !important;
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+    color-adjust: exact !important;
+  }
 }
 </style>
 </head><body>
@@ -43,6 +62,7 @@
     Keep this PC on with the thermal printer. Appointment slips print here automatically.</p>
     <div class="row" style="margin-top:12px">
       <button id="btnTest" class="btn-amber">Test Print 測試列印</button>
+      <button id="btnDivider" class="btn-gray">🟩 Print Divider 打印分類黑條</button>
       <button id="btnClearQueue" class="btn-gray">Clear Queue 清空列印隊列</button>
     </div>
   </div>
@@ -54,13 +74,14 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="appt/config.js"></script>
-<script src="appt/appt-core.js"></script>
+
+<!-- 同層目錄引用核心與設定 -->
+<script src="config.js"></script>
+<script src="appt-core.js"></script>
 
 <script>
 const $ = id => document.getElementById(id);
-const jobs = []; const seen = {};
-let printing = false;
+const jobs = []; const seen = {}; let printing = false;
 
 function log(msg, isErr){ 
   const d=document.createElement('div'); 
@@ -69,16 +90,9 @@ function log(msg, isErr){
   $('log').prepend(d); 
 }
 function updateCount(){ $('countChip').textContent = 'Queue 隊列：' + jobs.length; }
-function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// 全局錯誤捕獲：如果 JS 報錯，直接顯示在 Log 裡
-window.onerror = function(msg, url, line) {
-  log(`❌ JS Error: ${msg} (line ${line})`, true);
-  $('statusText').textContent = '❌ 腳本錯誤 (請看 Log)';
-  $('statusText').style.color = '#dc2626';
-};
+window.onerror = function(msg, url, line) { log(`❌ JS Error: ${msg} (line ${line})`, true); };
 
-// 1. 初始化核心
 try {
   APPT.init();
   log('⚙️ 核心已初始化 Core initialized');
@@ -86,17 +100,14 @@ try {
   log('❌ APPT.init() 失敗: ' + e.message, true);
 }
 
-// 2. 真實的 Firebase 連線狀態檢測
 try {
   const connectedRef = firebase.database().ref('.info/connected');
   connectedRef.on('value', (snap) => {
     if (snap.val() === true) {
       $('dot').classList.add('on'); 
-      $('statusText').textContent='已連線・監控預約隊列中 Online & watching';
-      $('statusText').style.color = '';
-      log('✅ Firebase 已連線 Connected');
+      $('statusText').textContent='✅ 已連線・監控預約隊列中 Online & watching';
+      $('statusText').style.color = '#16a34a';
       
-      // 連線成功後，才開始監聽隊列
       APPT.DB.on('printQueue', v => { 
         const all=v||{}; 
         Object.keys(all).forEach(k=>{ 
@@ -106,21 +117,18 @@ try {
       });
     } else {
       $('dot').classList.remove('on');
-      $('statusText').textContent='等待連線 Connecting…';
-      log('⏳ 等待 Firebase 連線... Waiting for connection');
+      $('statusText').textContent='⏳ 等待連線 Connecting…';
+      $('statusText').style.color = '';
     }
   });
-} catch(e) {
-  log('❌ Firebase 監聽失敗: ' + e.message, true);
-}
+} catch(e) { log('❌ Firebase 監聽失敗: ' + e.message, true); }
 
-// 3. 列印消費者邏輯
 function enqueue(key, j){
   if (seen[key]) return;
   seen[key] = 1;
   jobs.push(Object.assign({ key: key }, j));
   updateCount();
-  log(`收到預約條 Job: ${(j.rec&&j.rec.no)||'?'}`);
+  log(`收到任務 Job: ${j.type === 'divider' ? '🟩 分類黑條 Divider' : ((j.rec&&j.rec.no)||'?')}`);
   processJobs();
 }
 
@@ -139,10 +147,10 @@ async function processJobs(){
 
 function slipHTML(r){
   const T = APPT.CFG.strings;
-  const row = (label,val) => `<tr><th>${label}</th><td>${escapeHtml(val)||'—'}</td></tr>`;
+  const row = (label,val) => `<tr><th>${label}</th><td>${APPT.esc(val)||'—'}</td></tr>`;
   return `<div class="s-page">
     <div class="t-head"><img src="${APPT.CFG.logo}" alt="logo"><div>
-      <div class="t-school-zh">${escapeHtml(APPT.CFG.school.en)}</div></div></div>
+      <div class="t-school-zh">${APPT.esc(APPT.CFG.school.en)}</div></div></div>
     <div class="s-title">${T.slipTitle}</div>
     <table class="s-table">
       ${row(T.fName, r.name)}${row(T.fForm, r.form)}${row(T.fClassNo, r.classNo)}
@@ -150,18 +158,24 @@ function slipHTML(r){
     </table>
     <div class="s-div"></div>
     <div class="s-remark-label">${T.fRemark}</div>
-    <div class="s-remark-text">${escapeHtml(r.remark)||'—'}</div>
-    <div class="s-foot">${T.footerNote}<br>${T.issuedAt}: ${escapeHtml(r.issued)}</div>
+    <div class="s-remark-text">${APPT.esc(r.remark)||'—'}</div>
+    <div class="s-foot">${T.footerNote}<br>${T.issuedAt}: ${APPT.esc(r.issued)}</div>
   </div>`;
 }
 
 function printJob(j){
   const pa = $('printArea');
-  pa.innerHTML = slipHTML(j.rec || {});
+  if (j.type === 'divider') {
+    pa.className = 'divider-page';
+    pa.innerHTML = '';
+  } else {
+    pa.className = '';
+    pa.innerHTML = slipHTML(j.rec || {});
+  }
   const copies = Math.max(1, j.copies || 1);
   setTimeout(() => {
     for (let i=0;i<copies;i++) window.print();
-    log(`✅ ${(j.rec&&j.rec.no)||'SLIP'} x${copies} 已發送 Sent`);
+    log(`✅ ${j.type === 'divider' ? 'Divider 黑條' : ((j.rec&&j.rec.no)||'SLIP')} x${copies} 已發送 Sent`);
   }, 250);
 }
 
@@ -174,6 +188,12 @@ $('btnTest').onclick = () => {
   });
 };
 
+$('btnDivider').onclick = async () => {
+  if (!confirm('加入一張 1cm 分類黑條到列印隊列？\nAdd a 1cm divider to the print queue?')) return;
+  await APPT.queuePrint({ type: 'divider' });
+  log('🟩 手動加入分類黑條 Manual divider added');
+};
+
 $('btnClearQueue').onclick = async () => {
   if (!confirm('Clear all appointment print queue?\n清空所有預約列印隊列？')) return;
   await APPT.DB.remove('printQueue');
@@ -182,5 +202,7 @@ $('btnClearQueue').onclick = async () => {
   updateCount(); 
   log('隊列已清空 Queue cleared');
 };
+
+log('⚙️ 系統就緒 System ready');
 </script>
 </body></html>

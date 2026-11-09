@@ -12,6 +12,8 @@
 
 #printArea{display:none}
 @media print{
+  /* 🟢 強制獨立一頁列印設定 */
+  @page { size: 80mm auto; margin: 0; }
   body *{visibility:hidden}
   #printArea,#printArea *{visibility:visible}
   
@@ -33,32 +35,18 @@
     flex-direction:column;
     font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;
     font-size:13px; line-height:1.4; color:#000;
+    /* 🟢 強制分頁：確保每張票印完後切紙，下一張從新紙開始 */
+    page-break-after: always !important;
+    break-after: page !important;
   }
   
   #printArea .s-page .t-head{display:flex; align-items:center; gap:2mm; padding-bottom:2mm; margin-bottom:2mm; border-bottom:0.3mm solid #000;}
   #printArea .s-page .t-head img{width:10mm; height:10mm; object-fit:contain;}
   #printArea .s-page .t-school-zh{font-size:13px; font-weight:600; line-height:1.4; letter-spacing:0}
-  
   #printArea .s-page .s-title{font-size:16px; font-weight:700; text-align:center; margin:1.5mm 0 3mm; letter-spacing:1px;}
   
-  #printArea .s-page .s-table{
-    width:100%; 
-    border-collapse:collapse;
-    border-radius:0 !important;
-    overflow:visible !important;
-    background:transparent !important;
-    box-shadow:none !important;
-  }
-  #printArea .s-page .s-table th,#printArea .s-page .s-table td{
-    border:none !important;
-    padding:0.8mm 0 !important; 
-    line-height:1.3; 
-    text-align:left; 
-    vertical-align:top; 
-    white-space:normal; 
-    word-break:break-word; 
-    overflow-wrap:anywhere;
-  }
+  #printArea .s-page .s-table{width:100%; border-collapse:collapse; border-radius:0 !important; overflow:visible !important; background:transparent !important; box-shadow:none !important;}
+  #printArea .s-page .s-table th,#printArea .s-page .s-table td{border:none !important; padding:0.8mm 0 !important; line-height:1.3; text-align:left; vertical-align:top; white-space:normal; word-break:break-word; overflow-wrap:anywhere;}
   #printArea .s-page .s-table th{width:38%; font-weight:600;}
   
   #printArea .s-page .s-div{border-top:0.3mm solid #000; margin:2mm 0 1.5mm;}
@@ -75,6 +63,8 @@
     -webkit-print-color-adjust: exact !important; 
     print-color-adjust: exact !important; 
     color-adjust: exact !important;
+    page-break-after: always !important;
+    break-after: page !important;
   }
 }
 </style>
@@ -104,20 +94,10 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
 <script src="config.js"></script>
 <script src="appt-core.js"></script>
 
 <script>
-/* 🟢 終極防休眠 Hack：使用 Web Worker 打破 Chrome 背景 1 分鐘節流限制 */
-(function keepAlive() {
-  const code = `setInterval(()=>postMessage(1), 500);`;
-  const blob = new Blob([code], {type:'application/javascript'});
-  const w = new Worker(URL.createObjectURL(blob));
-  w.onmessage = () => {};
-  console.log('🔊 Web Worker 防休眠已啟動');
-})();
-
 const $ = id => document.getElementById(id);
 const jobs = []; const seen = {}; let printing = false;
 
@@ -128,24 +108,17 @@ function log(msg, isErr){
   $('log').prepend(d); 
 }
 function updateCount(){ $('countChip').textContent = 'Queue 隊列：' + jobs.length; }
-
 window.onerror = function(msg, url, line) { log(`❌ JS Error: ${msg} (line ${line})`, true); };
 
-try {
-  APPT.init();
-  log('⚙️ 核心已初始化 Core initialized');
-} catch(e) {
-  log('❌ APPT.init() 失敗: ' + e.message, true);
-}
+try { APPT.init(); log('⚙️ 核心已初始化'); } catch(e) { log('❌ ' + e.message, true); }
 
 try {
   const connectedRef = firebase.database().ref('.info/connected');
   connectedRef.on('value', (snap) => {
     if (snap.val() === true) {
       $('dot').classList.add('on'); 
-      $('statusText').textContent='✅ 已連線・監控預約隊列中 Online & watching';
+      $('statusText').textContent='✅ 已連線・監控預約隊列中';
       $('statusText').style.color = '#16a34a';
-      
       APPT.DB.on('printQueue', v => { 
         const all=v||{}; 
         Object.keys(all).forEach(k=>{ 
@@ -155,21 +128,22 @@ try {
       });
     } else {
       $('dot').classList.remove('on');
-      $('statusText').textContent='⏳ 等待連線 Connecting…';
+      $('statusText').textContent='⏳ 等待連線...';
       $('statusText').style.color = '';
     }
   });
-} catch(e) { log('❌ Firebase 監聽失敗: ' + e.message, true); }
+} catch(e) { log('❌ ' + e.message, true); }
 
 function enqueue(key, j){
   if (seen[key]) return;
   seen[key] = 1;
   jobs.push(Object.assign({ key: key }, j));
   updateCount();
-  log(`收到任務 Job: ${j.type === 'divider' ? '🟩 分類黑條 Divider' : ((j.rec&&j.rec.no)||'?')}`);
+  log(`📥 收到任務: ${j.type === 'divider' ? '🟩 黑條' : ((j.rec&&j.rec.no)||'?')}`);
   processJobs();
 }
 
+/* 🟢 核心流水線：印前等 2 秒 ➔ 印 ➔ 印後等 2 秒 (防 Chrome Spam 攔截) */
 async function processJobs(){
   if (printing) return;
   printing = true;
@@ -177,8 +151,32 @@ async function processJobs(){
     const j = jobs.shift();
     updateCount();
     await APPT.DB.remove('printQueue/' + j.key).catch(()=>{});
-    printJob(j);
-    await new Promise(r => setTimeout(r, 900));
+    
+    const jobName = j.type === 'divider' ? '🟩 黑條' : ((j.rec&&j.rec.no)||'SLIP');
+    log(`⏳ 準備列印: ${jobName} (等待 2 秒...)`);
+    
+    const pa = $('printArea');
+    if (j.type === 'divider') {
+      pa.className = 'divider-page';
+      pa.innerHTML = '';
+    } else {
+      pa.className = '';
+      pa.innerHTML = slipHTML(j.rec || {});
+    }
+    
+    // 1. 等待 2 秒 (避開 Chrome 連續呼叫攔截)
+    await new Promise(r => setTimeout(r, 2000));
+    
+    // 2. 執行列印 (CSS 已設定 break-after: page 確保獨立一頁)
+    const copies = Math.max(1, j.copies || 1);
+    for (let i=0; i<copies; i++) {
+      window.print();
+      log(`✅ ${jobName} 第 ${i+1}/${copies} 張已發送`);
+      if (i < copies - 1) await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    // 3. 印完後再等 2 秒，才處理下一張
+    await new Promise(r => setTimeout(r, 2000));
   }
   printing = false;
 }
@@ -201,46 +199,36 @@ function slipHTML(r){
   </div>`;
 }
 
-function printJob(j){
-  const pa = $('printArea');
-  if (j.type === 'divider') {
-    pa.className = 'divider-page';
-    pa.innerHTML = '';
-  } else {
-    pa.className = '';
-    pa.innerHTML = slipHTML(j.rec || {});
-  }
-  const copies = Math.max(1, j.copies || 1);
-  setTimeout(() => {
-    for (let i=0;i<copies;i++) window.print();
-    log(`✅ ${j.type === 'divider' ? 'Divider 黑條' : ((j.rec&&j.rec.no)||'SLIP')} x${copies} 已發送 Sent`);
-  }, 250);
-}
-
-$('btnTest').onclick = () => {
-  if (!confirm('Test print a sample slip?\n測試列印樣本預約條？')) return;
-  printJob({ 
-    rec:{ name:'Chan Tai Man', form:'3', classNo:'15', shouldSee:'Mr Wong',
-      date:APPT.todayStr(), time:'12:00', place:'Office', remark:'Sample slip', issued:APPT.nowLabel() }, 
-    copies:1 
-  });
+$('btnTest').onclick = async () => {
+  if (!confirm('Test print a sample slip?')) return;
+  log('⏳ 測試列印等待 2 秒...');
+  await new Promise(r => setTimeout(r, 2000));
+  printJob({ rec:{ name:'Chan Tai Man', form:'3', classNo:'15', shouldSee:'Mr Wong', date:APPT.todayStr(), time:'12:00', place:'Office', remark:'Sample slip', issued:APPT.nowLabel() }, copies:1 });
 };
 
+function printJob(j){
+  const pa = $('printArea');
+  if (j.type === 'divider') { pa.className = 'divider-page'; pa.innerHTML = ''; } 
+  else { pa.className = ''; pa.innerHTML = slipHTML(j.rec || {}); }
+  window.print();
+  log(`✅ 測試列印已發送`);
+}
+
 $('btnDivider').onclick = async () => {
-  if (!confirm('加入一張 1cm 分類黑條到列印隊列？\nAdd a 1cm divider to the print queue?')) return;
+  if (!confirm('加入一張 1cm 分類黑條到列印隊列？')) return;
   await APPT.queuePrint({ type: 'divider' });
-  log('🟩 手動加入分類黑條 Manual divider added');
+  log('🟩 手動加入分類黑條');
 };
 
 $('btnClearQueue').onclick = async () => {
-  if (!confirm('Clear all appointment print queue?\n清空所有預約列印隊列？')) return;
+  if (!confirm('Clear all appointment print queue?')) return;
   await APPT.DB.remove('printQueue');
   jobs.length = 0; 
   for(let k in seen) delete seen[k];
   updateCount(); 
-  log('隊列已清空 Queue cleared');
+  log('隊列已清空');
 };
 
-log('⚙️ 系統就緒 System ready (Anti-Sleep Mode)');
+log('⚙️ 系統就緒 (Anti-Spam 2s Delay + Page Break)');
 </script>
 </body></html>

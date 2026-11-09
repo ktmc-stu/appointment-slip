@@ -15,7 +15,7 @@
   body *{visibility:hidden}
   #printArea,#printArea *{visibility:visible}
   
-  /* 🟢 修正：寬度改為 72mm 並水平置中，避開打印機左側硬體盲區 */
+  /* 72mm 寬並水平置中，避開打印機左側硬體盲區 */
   #printArea{
     display:block !important; 
     position:absolute; 
@@ -34,19 +34,34 @@
     display:flex; 
     flex-direction:column;
     font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;
-    font-size:13px; line-height:1.6; color:#000;
+    font-size:13px; line-height:1.4; color:#000;
   }
-  #printArea .s-page .t-head{display:flex; align-items:center; gap:2.5mm; padding-bottom:2.5mm; margin-bottom:3mm; border-bottom:0.3mm solid #000;}
-  #printArea .s-page .t-head img{width:14mm; height:14mm; object-fit:contain;}
-  #printArea .s-page .t-school-zh{font-size:22px; font-weight:600; line-height:1.25; letter-spacing:1px}
-  #printArea .s-page .s-title{font-size:18px; font-weight:700; text-align:center; margin:2mm 0 4mm; letter-spacing:1px;}
+  
+  /* 學校名稱：縮小至 13px (與內文同)，普通粗體 */
+  #printArea .s-page .t-head{display:flex; align-items:center; gap:2mm; padding-bottom:2mm; margin-bottom:2mm; border-bottom:0.3mm solid #000;}
+  #printArea .s-page .t-head img{width:10mm; height:10mm; object-fit:contain;}
+  #printArea .s-page .t-school-zh{font-size:13px; font-weight:600; line-height:1.4; letter-spacing:0}
+  
+  #printArea .s-page .s-title{font-size:16px; font-weight:700; text-align:center; margin:1.5mm 0 3mm; letter-spacing:1px;}
+  
+  /* 表格：縮小行距與內距 */
   #printArea .s-page .s-table{width:100%; border-collapse:collapse;}
-  #printArea .s-page .s-table th,#printArea .s-page .s-table td{border:none; padding:2mm 0; text-align:left; vertical-align:top; white-space:normal; word-break:break-word; overflow-wrap:anywhere;}
+  #printArea .s-page .s-table th,#printArea .s-page .s-table td{
+    border:none; 
+    padding:0.8mm 0; 
+    line-height:1.3; 
+    text-align:left; 
+    vertical-align:top; 
+    white-space:normal; 
+    word-break:break-word; 
+    overflow-wrap:anywhere;
+  }
   #printArea .s-page .s-table th{width:38%; font-weight:600;}
-  #printArea .s-page .s-div{border-top:0.3mm solid #000; margin:3mm 0 2mm;}
-  #printArea .s-page .s-remark-label{font-weight:600; margin-bottom:1mm;}
-  #printArea .s-page .s-remark-text{line-height:1.6; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere;}
-  #printArea .s-page .s-foot{margin-top:auto; padding-top:3mm; font-size:11px; line-height:1.5;}
+  
+  #printArea .s-page .s-div{border-top:0.3mm solid #000; margin:2mm 0 1.5mm;}
+  #printArea .s-page .s-remark-label{font-weight:600; margin-bottom:0.5mm;}
+  #printArea .s-page .s-remark-text{line-height:1.4; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere;}
+  #printArea .s-page .s-foot{margin-top:auto; padding-top:2mm; font-size:11px; line-height:1.4;}
 
   /* 🟩 分類黑條樣式 (72mm 寬，1cm 高，強制純黑) */
   #printArea.divider-page{
@@ -215,6 +230,6 @@ $('btnClearQueue').onclick = async () => {
   log('隊列已清空 Queue cleared');
 };
 
-log('⚙️ 系統就緒 System ready (72mm Centered)');
+log('⚙️ 系統就緒 System ready');
 </script>
 </body></html>

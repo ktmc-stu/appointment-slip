@@ -1,22 +1,23 @@
 <!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>APPT Printer 預約條列印端</title><link rel="stylesheet" href="css/style.css">
+<title>APPT Printer 預約條列印端</title>
+<link rel="stylesheet" href="css/style.css">
 <style>
-/* 頁面顯示用：對比度修正 On-screen UI contrast fixes */
+/* 頁面顯示用 UI */
 .tag{background:#e2e8f0 !important;color:#0f172a !important;border:1px solid #64748b;border-radius:999px;padding:8px 16px;font-size:16px;font-weight:800}
 .dot{width:14px;height:14px;border-radius:50%;background:#dc2626;display:inline-block;flex:none}
 .dot.on{background:#16a34a;box-shadow:0 0 8px #16a34a}
 .log{background:#0b1220;color:#4ade80;font-family:ui-monospace,monospace;font-size:14px;border-radius:12px;padding:12px;height:280px;overflow:auto}
 .log div{padding:2px 0;border-bottom:1px solid #1e293b}
 
-/* 列印：預約條樣式 Print: Appointment slip styles */
+/* 列印原理：visibility 控制，與原版 printer 一致 */
 #printArea{display:none}
 @media print{
   body *{visibility:hidden}
   #printArea,#printArea *{visibility:visible}
   #printArea{display:block;position:absolute;left:0;top:0}
-  /* 預約條：80mm 寬、左右留白 2mm、最小高度 14cm
-     Appointment slip: 80mm wide, 2mm side margins, min height 14cm */
+  
+  /* 預約條專屬樣式 Appointment Slip Print Styles */
   #printArea .s-page{
     width:80mm !important;
     padding:0 2mm !important;
@@ -24,65 +25,34 @@
     box-sizing:border-box;
     display:flex;
     flex-direction:column;
+    font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;
+    font-size:13px; line-height:1.6; color:#000;
   }
+  #printArea .s-page .t-head{
+    display:flex; align-items:center; gap:2.5mm; padding-bottom:2.5mm; margin-bottom:3mm;
+    border-bottom:0.3mm solid #000;
+  }
+  #printArea .s-page .t-head img{width:14mm; height:14mm; object-fit:contain;}
+  #printArea .s-page .t-school-zh{font-size:22px; font-weight:600; line-height:1.25; letter-spacing:1px}
+  
   #printArea .s-page .s-title{
-    font-size:18px;
-    font-weight:700;
-    text-align:center;
-    margin:2mm 0 4mm;
-    letter-spacing:1px;
+    font-size:18px; font-weight:700; text-align:center;
+    margin:2mm 0 4mm; letter-spacing:1px;
   }
-  #printArea .s-page .s-table{
-    width:100%;
-    border-collapse:collapse;
-  }
+  #printArea .s-page .s-table{width:100%; border-collapse:collapse;}
   #printArea .s-page .s-table th,
   #printArea .s-page .s-table td{
-    border:none;
-    padding:2mm 0;
-    text-align:left;
-    vertical-align:top;
-    white-space:normal;
-    word-break:break-word;
-    overflow-wrap:anywhere;
+    border:none; padding:2mm 0; text-align:left; vertical-align:top;
+    white-space:normal; word-break:break-word; overflow-wrap:anywhere;
   }
-  #printArea .s-page .s-table th{
-    width:38%;
-    font-weight:600;
-  }
-  #printArea .s-page .s-div{
-    border-top:0.3mm solid #000;
-    margin:3mm 0 2mm;
-  }
-  #printArea .s-page .s-remark-label{
-    font-weight:600;
-    margin-bottom:1mm;
-  }
-  #printArea .s-page .s-remark-text{
-    line-height:1.6;
-    white-space:pre-wrap;
-    word-break:break-word;
-    overflow-wrap:anywhere;
-  }
-  #printArea .s-page .s-foot{
-    margin-top:auto;
-    padding-top:3mm;
-    font-size:11px;
-    line-height:1.5;
-  }
+  #printArea .s-page .s-table th{width:38%; font-weight:600;}
+  #printArea .s-page .s-div{border-top:0.3mm solid #000; margin:3mm 0 2mm;}
+  #printArea .s-page .s-remark-label{font-weight:600; margin-bottom:1mm;}
+  #printArea .s-page .s-remark-text{line-height:1.6; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere;}
+  #printArea .s-page .s-foot{margin-top:auto; padding-top:3mm; font-size:11px; line-height:1.5;}
 }
 </style>
 </head><body>
-<div id="ktmcLogin" style="position:fixed; inset:0; background:linear-gradient(180deg,#f8fafc,#eef2f7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px">
-  <div class="card" style="max-width:400px; width:100%; text-align:center">
-    <h3 style="border:none; padding:0; font-size:24px; margin-bottom:8px" id="ktmcLoginTitle">🔒 Login Required 需要登入</h3>
-    <p style="margin:0 0 4px" id="ktmcLoginDesc">請輸入密碼</p>
-    <p class="muted" style="margin:0 0 16px; font-size:13px" id="ktmcLoginDescEn">Enter the password to continue</p>
-    <input type="password" id="ktmcLoginPw" placeholder="Password 密碼" style="width:100%; text-align:center; font-size:18px; padding:14px">
-    <button id="ktmcLoginBtn" style="width:100%; margin-top:14px; font-size:16px; padding:14px">登入 Login</button>
-    <p id="ktmcLoginErr" style="margin-top:12px; color:#dc2626; font-weight:600; min-height:20px"></p>
-  </div>
-</div>
 
 <div class="topbar"><span>🖨️ APPT Printer 預約條列印端</span><span class="chip" id="countChip">Queue 隊列：0</span></div>
 <div class="admin-wrap">
@@ -109,26 +79,37 @@
 <div id="printArea"></div>
 <div id="toast" class="toast"></div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="js/common.js"></script>
+
+<!-- APPT 獨立核心 (無密碼) -->
+<script src="appt/config.js"></script>
 <script src="appt/appt-core.js"></script>
+
 <script>
+// 初始化 APPT 核心 (連接 Firebase)
 APPT.init();
-bindLoginForm(false);
-if (!KTMC_USER_AUTHED) { window.onAfterLogin = () => location.reload(); }
 
 const $ = id => document.getElementById(id);
 const jobs = []; const seen = {};
 let printing = false;
 
-function log(msg){ const d=document.createElement('div'); d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`; $('log').prepend(d); }
+function log(msg){ 
+  const d=document.createElement('div'); 
+  d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`; 
+  $('log').prepend(d); 
+}
 function updateCount(){ $('countChip').textContent = 'Queue 隊列：' + jobs.length; }
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-setTimeout(()=>{ $('dot').classList.add('on'); $('statusText').textContent='已連線・監控預約隊列中 Online & watching'; },1500);
+// 連線狀態
+setTimeout(()=>{ 
+  $('dot').classList.add('on'); 
+  $('statusText').textContent='已連線・監控預約隊列中 Online & watching'; 
+}, 1000);
 
+// 隊列監聽 (列印原理)
 function enqueue(key, j){
   if (seen[key]) return;
   seen[key] = 1;
@@ -137,15 +118,27 @@ function enqueue(key, j){
   log(`收到預約條 Job: ${(j.rec&&j.rec.no)||'?'}`);
   processJobs();
 }
-APPT.DB._init();
-APPT.DB.on('printQueue', v => { const all=v||{}; Object.keys(all).forEach(k=>{ const j=all[k]; if(j&&!j.done&&!seen[k]) enqueue(k,j); }); });
+
+APPT.DB.on('printQueue', v => { 
+  const all=v||{}; 
+  Object.keys(all).forEach(k=>{ 
+    const j=all[k]; 
+    if(j && !j.done && !seen[k]) enqueue(k,j); 
+  }); 
+});
+
+// 輪詢後備
 setInterval(()=>{
   APPT.DB.once('printQueue').then(v => {
     const all = v || {};
-    Object.keys(all).forEach(k => { const j=all[k]; if(j && !j.done && !seen[k]) enqueue(k,j); });
+    Object.keys(all).forEach(k => { 
+      const j=all[k]; 
+      if(j && !j.done && !seen[k]) enqueue(k,j); 
+    });
   }).catch(()=>{});
 }, 3000);
 
+// 序列化列印消費者
 async function processJobs(){
   if (printing) return;
   printing = true;
@@ -154,11 +147,12 @@ async function processJobs(){
     updateCount();
     await APPT.DB.remove('printQueue/' + j.key).catch(()=>{});
     printJob(j);
-    await new Promise(r => setTimeout(r, 900));
+    await new Promise(r => setTimeout(r, 900)); // 等待列印指令發送
   }
   printing = false;
 }
 
+// 預約條 HTML 渲染
 function slipHTML(r){
   const T = APPT.CFG.strings;
   const row = (label,val) => `<tr><th>${label}</th><td>${escapeHtml(val)||'—'}</td></tr>`;
@@ -182,6 +176,7 @@ function slipHTML(r){
   </div>`;
 }
 
+// 觸發列印
 function printJob(j){
   const pa = $('printArea');
   pa.innerHTML = slipHTML(j.rec || {});
@@ -192,16 +187,27 @@ function printJob(j){
   }, 250);
 }
 
+// 測試與清空
 $('btnTest').onclick = () => {
   if (!confirm('Test print a sample slip?\n測試列印樣本預約條？')) return;
-  printJob({ rec:{ name:'Chan Tai Man', form:'3', classNo:'15', shouldSee:'Mr Wong',
-    date:APPT.todayStr(), time:'12:00', place:'Office', remark:'Sample slip', issued:APPT.nowLabel() }, copies:1 });
+  printJob({ 
+    rec:{ 
+      name:'Chan Tai Man', form:'3', classNo:'15', shouldSee:'Mr Wong',
+      date:APPT.todayStr(), time:'12:00', place:'Office', remark:'Sample slip', issued:APPT.nowLabel() 
+    }, 
+    copies:1 
+  });
 };
+
 $('btnClearQueue').onclick = async () => {
   if (!confirm('Clear all appointment print queue?\n清空所有預約列印隊列？')) return;
   await APPT.DB.remove('printQueue');
-  jobs.length = 0; updateCount(); log('隊列已清空 Queue cleared');
+  jobs.length = 0; 
+  for(let k in seen) delete seen[k]; // 清空 seen 避免記憶體洩漏
+  updateCount(); 
+  log('隊列已清空 Queue cleared');
 };
-log('系統就緒 System ready');
+
+log('系統就緒 System ready (No Password)');
 </script>
 </body></html>
